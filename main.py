@@ -7,7 +7,7 @@ from shapely.geometry import shape
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QPushButton, QLabel,
     QFileDialog, QLineEdit, QDateEdit, QSlider, QTextEdit, QHBoxLayout,
-    QTabWidget, QComboBox
+    QTabWidget, QComboBox, QSpacerItem, QSizePolicy
 )
 from PyQt6.QtCore import Qt, QDate
 from PyQt6.QtGui import QIcon
@@ -26,9 +26,62 @@ class Sentinel2App(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setWindowIcon(QIcon("ugm.png"))
+        self.setWindowIcon(QIcon("logo.png"))
         self.setWindowTitle("Palm Tree Classification")
-        self.setGeometry(200, 200, 500, 400)
+        self.setGeometry(100, 70, 900, 600)
+        # self.showMaximized()  # Open in fullscreen mode
+        self.setMinimumSize(800, 500)
+
+        # Styles:
+        self.setStyleSheet("""
+            QWidget {
+                background-color: white;
+                color: black;
+                font-size: 14px;
+            }
+            QPushButton {
+                background-color: #f0f0f0;
+                border: 1px solid #ccc;
+                padding: 5px;
+            }
+            QPushButton:hover {
+                background-color: #e0e0e0;
+            }
+            QLineEdit, QTextEdit, QComboBox, QDateEdit {
+                background-color: white;
+                border: 1px solid #ccc;
+                padding: 5px;
+            }
+            QLabel {
+                font-weight: bold;
+            }
+            QSlider::groove:horizontal {
+                background: #ddd;
+                height: 8px;
+            }
+            QSlider::handle:horizontal {
+                background: #888;
+                width: 16px;
+                margin: -4px 0;
+                border-radius: 8px;
+            }
+            QTabWidget::pane {
+                border: 1px solid #ccc;
+                background: white;
+            }
+            QTabBar::tab {
+                background: #e0e0e0;
+                padding: 10px;
+                margin-right: 2px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+            QTabBar::tab:selected {
+                background: #a0c4ff;
+                color: black;
+                font-weight: bold;
+            }
+        """)
 
         # Initialize attributes
         self.project = None
@@ -79,7 +132,7 @@ class Sentinel2App(QWidget):
 
     def initTab1(self):
         """Initialize the first tab (existing UI) with a side-by-side map."""
-        main_layout = QHBoxLayout()  # Mengatur tata letak secara horizontal
+        main_layout = QVBoxLayout()  # Mengatur tata letak secara horizontal
         form_layout = QVBoxLayout()  # Untuk elemen UI sebelumnya
 
         # Project Name
@@ -105,12 +158,12 @@ class Sentinel2App(QWidget):
         self.start_date_label = QLabel("Start Date:")
         self.start_date_input = QDateEdit()
         self.start_date_input.setCalendarPopup(True)
-        self.start_date_input.setDate(QDate.currentDate())
+        self.start_date_input.setDate(self.start_date)
         
         self.end_date_label = QLabel("End Date:")
         self.end_date_input = QDateEdit()
         self.end_date_input.setCalendarPopup(True)
-        self.end_date_input.setDate(QDate.currentDate().addDays(30))
+        self.end_date_input.setDate(QDate.currentDate())
 
         self.date_layout.addWidget(self.start_date_label)
         self.date_layout.addWidget(self.start_date_input)
@@ -143,11 +196,6 @@ class Sentinel2App(QWidget):
         self.export_btn.clicked.connect(self.export_image)
         form_layout.addWidget(self.export_btn)
 
-        # Log Window
-        self.log_window = QTextEdit()
-        self.log_window.setReadOnly(True)
-        form_layout.addWidget(self.log_window)
-
         # Web Map View
         self.web_view = QWebEngineView()
         self.web_view.setHtml(self.get_map_html())
@@ -156,12 +204,17 @@ class Sentinel2App(QWidget):
         self.channel.registerObject("pyqtChannel", self)  # Daftarkan objek Python ke Web Channel
         # Set Web Channel ke Web View
         self.web_view.page().setWebChannel(self.channel)
-        # Gabungkan form dan peta dalam layout utama
-        main_layout.addLayout(form_layout, 1)  # UI sebelumnya (form) - lebih kecil
-        main_layout.addWidget(self.web_view, 2)  # Map - lebih besar
+        
+        # Horizontal layout to arrange form and map side by side
+        content_layout = QHBoxLayout()
+        content_layout.addLayout(form_layout, 1)  # Form takes 1 part
+        content_layout.addWidget(self.web_view, 2)  # Map takes 2 parts
+
+        # Add to main vertical layout
+        main_layout.addLayout(content_layout)  # Add form & map at the top
+        self.log_window = self.add_log_and_watermark(main_layout)
 
         self.tab1.setLayout(main_layout)  # Terapkan tata letak pada tab1
-
 
     def get_map_html(self):
         """Return the HTML content for displaying the map with LeafletJS."""
@@ -223,28 +276,127 @@ class Sentinel2App(QWidget):
     def initTab2(self):
         """Initialize the second tab (Placeholder for future functionality)."""
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("This is the second tab."))
-        self.tab2.setLayout(layout)
+        form_layout = QVBoxLayout()  # Form layout for buttons
 
         # Load Image Button
         self.load_image_btn = QPushButton("Load Image")
         self.load_image_btn.clicked.connect(self.load_image)
-        layout.addWidget(self.load_image_btn)
+        form_layout.addWidget(self.load_image_btn)
 
          # Start Super Resolution Button
         self.super_res_btn = QPushButton("Start Super Resolution")
         self.super_res_btn.clicked.connect(self.start_super_resolution)
-        layout.addWidget(self.super_res_btn)
+        form_layout.addWidget(self.super_res_btn)
 
+        # Web Map View
+        self.web_view_tab2 = QWebEngineView()
+        self.web_view_tab2.setHtml(self.get_map_html_tab2())  # Load map
+        self.web_view_tab2.setMinimumHeight(400)  # Adjust height if needed
+        
+        self.channel_tab2 = QWebChannel()
+        self.channel_tab2.registerObject("pyqtChannel", self)  
+        self.web_view_tab2.page().setWebChannel(self.channel_tab2)
+
+        # Add widgets in vertical order
+        layout.addLayout(form_layout)  # Buttons at the top
+        layout.addWidget(self.web_view_tab2)  # Map in the middle
+        
         # Add Log and Watermark
         self.log_window_tab2 = self.add_log_and_watermark(layout)  # Separate log for Tab 2
 
         self.tab2.setLayout(layout)
 
+    def get_map_html_tab2(self):
+        """Return HTML for a side-by-side Leaflet map with a working slider."""
+        return '''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Leaflet Side-by-Side Map</title>
+            <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+            <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+            <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+            <script src="script-leaflet-side-by-side.js"></script>
+            <script src="https://cdn.jsdelivr.net/gh/digidem/leaflet-side-by-side/leaflet-side-by-side.js"></script>
+            <script src="https://unpkg.com/georaster"></script>
+            <script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
+            <script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
+            <style>
+                #mapContainer {
+                    width: 100%;
+                    height: 400px;
+                    position: relative;
+                }
+                #map {
+                    width: 100%;
+                    height: 100%;
+                }
+            </style>
+        </head>
+        <body>
+            <div id="mapContainer">
+                <div id="map"></div>
+            </div>
+            
+            <script>
+                // Initialize the main map
+                var map = L.map('map').setView([-0.4827, 117.1821], 12);
+
+                // Base layers (Before & After)
+                var beforeLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                });
+
+                var afterLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                });
+
+                // Add layers to map
+                beforeLayer.addTo(map);
+                afterLayer.addTo(map);
+
+                // Add Side-by-Side Control
+                L.control.sideBySide(beforeLayer, afterLayer).addTo(map);
+
+                // PyQt Integration
+                new QWebChannel(qt.webChannelTransport, function (channel) {
+                    window.pyqtChannel = channel.objects.pyqtChannel;
+                });
+
+                function updateBeforeLayer(tiffUrl) {
+                    fetch(tiffUrl) 
+                        .then(response => response.arrayBuffer()) 
+                        .then(arrayBuffer => {
+                            parseGeoraster(arrayBuffer).then(georaster => {
+                                let newLayer = new GeoRasterLayer({
+                                    georaster: georaster,
+                                    opacity: 1.0
+                                });
+
+                                if (typeof beforeLayer !== 'undefined') {
+                                    map.removeLayer(beforeLayer);  // Remove old layer
+                                }
+
+                                beforeLayer = newLayer.addTo(map);
+                                map.fitBounds(beforeLayer.getBounds());
+                            });
+                        })
+                        .catch(error => console.error("Error loading GeoTIFF:", error));
+                }
+
+                function updateAfterLayer(imageUrl) {
+                    afterLayer.setUrl(imageUrl);
+                }
+            </script>
+        </body>
+        </html>
+        '''
+
     def initTab3(self):
         """Initialize the third tab (Placeholder for future functionality)."""
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("This is the third tab."))
         self.tab3.setLayout(layout)
 
        # Load Image Button
@@ -266,7 +418,7 @@ class Sentinel2App(QWidget):
         self.start_processing_btn.clicked.connect(self.start_processing)
         layout.addWidget(self.start_processing_btn)
 
-        self.log_window_tab3 = self.add_log_and_watermark(layout)  # Separate log for Tab 2
+        self.log_window_tab3 = self.add_log_and_watermark(layout)  # Separate log for Tab 3
 
         self.tab3.setLayout(layout)
 
@@ -281,16 +433,25 @@ class Sentinel2App(QWidget):
         if hasattr(self, 'log_window_tab3') and self.log_window_tab3:
             self.log_window_tab3.append(message)  # Log in Tab 3 (if exists)
 
-    def add_log_and_watermark(self, layout):
+    def add_log_and_watermark(self, parent_layout):
         """Adds a log window and watermark label to a given layout."""
         log_window = QTextEdit()
         log_window.setReadOnly(True)
-        layout.addWidget(log_window)
+        
+        # Vertical layout for log and watermark
+        log_layout = QVBoxLayout()
+        log_layout.addWidget(log_window)
 
-        watermark = QLabel("© Department of Geodetic Engineering FT UGM")
+        watermark = QLabel("© Badan Pertanahan Nasional Kantor Wilayah Kalimantan Timur")
         watermark.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        watermark.setStyleSheet("font-size: 10px; color: gray;")
-        layout.addWidget(watermark)
+        watermark.setStyleSheet("font-size: 10px; color: black;")
+
+        spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        log_layout.addItem(spacer)  # Pushes watermark to the bottom
+        log_layout.addWidget(watermark)
+
+        # Append log layout to the form layout (not main_layout)
+        parent_layout.addLayout(log_layout)
 
         return log_window  # Return log_window to use it in the tab
     
@@ -452,10 +613,15 @@ class Sentinel2App(QWidget):
 
     def load_image(self):
         """Browse and load a TIF image."""
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select Image File", "", "TIFF Files (*.tif *.tiff)")
+        file_dialog = QFileDialog()
+        file_path, _ = file_dialog.getOpenFileName(self, "Select Image File", "", "TIFF Files (*.tif *.tiff)")
 
         if file_path:
-            self.log(f"Image loaded: {file_path}")
+            image_url = f"file://{file_path}"  # Send the actual TIFF file URL
+
+            # Pass TIFF path to JavaScript
+            js_script = f"updateBeforeLayer('{image_url}');"
+            self.web_view_tab2.page().runJavaScript(js_script)
 
     def start_super_resolution(self):
         """Placeholder function for Super Resolution process."""
