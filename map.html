@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leaflet Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css"
+    />
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+  </head>
+  <body>
+    <div id="map" style="width: 100%; height: 400px"></div>
+    <script>
+      var map = L.map("map").setView(
+        [-0.4827527195626835, 117.18218840574627],
+        12
+      );
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map);
+
+      var drawnItems = new L.FeatureGroup();
+      map.addLayer(drawnItems);
+      var drawControl = new L.Control.Draw({
+        edit: {
+          featureGroup: drawnItems,
+        },
+        draw: {
+          polygon: true,
+          marker: false,
+          circle: false,
+          circlemarker: false,
+          rectangle: true,
+          polyline: false,
+        },
+      });
+      map.addControl(drawControl);
+
+      map.on("draw:created", function (e) {
+        var layer = e.layer;
+        drawnItems.addLayer(layer);
+        var geojson = layer.toGeoJSON();
+        if (window.pyqtChannel) {
+          window.pyqtChannel.receiveGeoJSON(JSON.stringify(geojson));
+        }
+        console.log(JSON.stringify(layer.toGeoJSON()));
+      });
+      new QWebChannel(qt.webChannelTransport, function (channel) {
+        window.pyqtChannel = channel.objects.pyqtChannel; // Pastikan channel terhubung
+      });
+    </script>
+  </body>
+</html>
