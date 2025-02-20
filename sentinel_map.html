@@ -25,7 +25,7 @@
             <meta name="viewport" content="width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             <style>
-                #map_38037526286cc97fc47135341695aea3 {
+                #map_6d22be2fd29280749885d45178f39a1a {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -39,16 +39,16 @@
 <body>
     
     
-            <div class="folium-map" id="map_38037526286cc97fc47135341695aea3" ></div>
+            <div class="folium-map" id="map_6d22be2fd29280749885d45178f39a1a" ></div>
         
 </body>
 <script>
     
     
-            var map_38037526286cc97fc47135341695aea3 = L.map(
-                "map_38037526286cc97fc47135341695aea3",
+            var map_6d22be2fd29280749885d45178f39a1a = L.map(
+                "map_6d22be2fd29280749885d45178f39a1a",
                 {
-                    center: [-0.5084545, 117.13963749999999],
+                    center: [-0.5067375, 117.147603],
                     crs: L.CRS.EPSG3857,
                     ...{
   "zoom": 12,
@@ -63,7 +63,7 @@
 
         
     
-            var tile_layer_fe98609e245149dc011b73a7e17a0bef = L.tileLayer(
+            var tile_layer_3cbdadc548131dc6899184492b83f659 = L.tileLayer(
                 "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                 {
   "minZoom": 0,
@@ -80,11 +80,11 @@
             );
         
     
-            tile_layer_fe98609e245149dc011b73a7e17a0bef.addTo(map_38037526286cc97fc47135341695aea3);
+            tile_layer_3cbdadc548131dc6899184492b83f659.addTo(map_6d22be2fd29280749885d45178f39a1a);
         
     
-            var tile_layer_c1a2ebe84bf60a37aa1950bd1cdda34b = L.tileLayer(
-                "https://earthengine.googleapis.com/v1/projects/ee-calvinwijaya/maps/e5fcfd8d62447392712bd327280e2918-85bb744123b43c8da957b7cb4d119b27/tiles/{z}/{x}/{y}",
+            var tile_layer_e9b1dcba629641f896c6434b5aba39eb = L.tileLayer(
+                "https://earthengine.googleapis.com/v1/projects/ee-calvinwijaya/maps/726c54e63608b7f376007f682a44c4de-b48dfa412fe043d254928bd603e5001a/tiles/{z}/{x}/{y}",
                 {
   "minZoom": 0,
   "maxZoom": 18,
@@ -100,51 +100,51 @@
             );
         
     
-            tile_layer_c1a2ebe84bf60a37aa1950bd1cdda34b.addTo(map_38037526286cc97fc47135341695aea3);
+            tile_layer_e9b1dcba629641f896c6434b5aba39eb.addTo(map_6d22be2fd29280749885d45178f39a1a);
         
     
 
-        function geo_json_e6670ae92c1961a304d50984f9d13ce7_onEachFeature(feature, layer) {
+        function geo_json_af77b6413ae6f91b08be3d751d695ade_onEachFeature(feature, layer) {
             layer.on({
             });
         };
-        var geo_json_e6670ae92c1961a304d50984f9d13ce7 = L.geoJson(null, {
-                onEachFeature: geo_json_e6670ae92c1961a304d50984f9d13ce7_onEachFeature,
+        var geo_json_af77b6413ae6f91b08be3d751d695ade = L.geoJson(null, {
+                onEachFeature: geo_json_af77b6413ae6f91b08be3d751d695ade_onEachFeature,
             
             ...{
 }
         });
 
-        function geo_json_e6670ae92c1961a304d50984f9d13ce7_add (data) {
-            geo_json_e6670ae92c1961a304d50984f9d13ce7
+        function geo_json_af77b6413ae6f91b08be3d751d695ade_add (data) {
+            geo_json_af77b6413ae6f91b08be3d751d695ade
                 .addData(data);
         }
-            geo_json_e6670ae92c1961a304d50984f9d13ce7_add({"coordinates": [[[117.116652, -0.52871], [117.116652, -0.488199], [117.162623, -0.488199], [117.162623, -0.52871], [117.116652, -0.52871]]], "type": "Polygon"});
-        geo_json_e6670ae92c1961a304d50984f9d13ce7.setStyle(function(feature) {return feature.properties.style;});
+            geo_json_af77b6413ae6f91b08be3d751d695ade_add({"coordinates": [[[117.113943, -0.533859], [117.113943, -0.479616], [117.181263, -0.479616], [117.181263, -0.533859], [117.113943, -0.533859]]], "type": "Polygon"});
+        geo_json_af77b6413ae6f91b08be3d751d695ade.setStyle(function(feature) {return feature.properties.style;});
 
         
     
-            geo_json_e6670ae92c1961a304d50984f9d13ce7.addTo(map_38037526286cc97fc47135341695aea3);
+            geo_json_af77b6413ae6f91b08be3d751d695ade.addTo(map_6d22be2fd29280749885d45178f39a1a);
         
     
-            var layer_control_bc86829633559ca4b008e7c6f8836c6c_layers = {
+            var layer_control_28d4384a9e949d931800ba02f9dbaf09_layers = {
                 base_layers : {
-                    "openstreetmap" : tile_layer_fe98609e245149dc011b73a7e17a0bef,
+                    "openstreetmap" : tile_layer_3cbdadc548131dc6899184492b83f659,
                 },
                 overlays :  {
-                    "Sentinel 2 Masked" : tile_layer_c1a2ebe84bf60a37aa1950bd1cdda34b,
-                    "ROI" : geo_json_e6670ae92c1961a304d50984f9d13ce7,
+                    "Sentinel 2 Masked" : tile_layer_e9b1dcba629641f896c6434b5aba39eb,
+                    "ROI" : geo_json_af77b6413ae6f91b08be3d751d695ade,
                 },
             };
-            let layer_control_bc86829633559ca4b008e7c6f8836c6c = L.control.layers(
-                layer_control_bc86829633559ca4b008e7c6f8836c6c_layers.base_layers,
-                layer_control_bc86829633559ca4b008e7c6f8836c6c_layers.overlays,
+            let layer_control_28d4384a9e949d931800ba02f9dbaf09 = L.control.layers(
+                layer_control_28d4384a9e949d931800ba02f9dbaf09_layers.base_layers,
+                layer_control_28d4384a9e949d931800ba02f9dbaf09_layers.overlays,
                 {
   "position": "topright",
   "collapsed": true,
   "autoZIndex": true,
 }
-            ).addTo(map_38037526286cc97fc47135341695aea3);
+            ).addTo(map_6d22be2fd29280749885d45178f39a1a);
 
         
 </script>
