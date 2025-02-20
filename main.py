@@ -15,6 +15,10 @@ from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebChannel import QWebChannel
 from PyQt6.QtCore import pyqtSlot
 
+import os
+import subprocess
+import time
+
 # Authenticate and Initialize Google Earth Engine
 def authenticate_and_initialize(project):
     """Authenticate and initialize the Google Earth Engine."""
@@ -25,6 +29,7 @@ def authenticate_and_initialize(project):
 class Sentinel2App(QWidget):
     def __init__(self):
         super().__init__()
+        self.server_process = None  # Start local server
 
         self.setWindowIcon(QIcon("logo.png"))
         self.setWindowTitle("Palm Tree Classification")
@@ -305,6 +310,26 @@ class Sentinel2App(QWidget):
         self.log_window_tab2 = self.add_log_and_watermark(layout)  # Separate log for Tab 2
 
         self.tab2.setLayout(layout)
+    
+    def start_server(self):
+        """Starts a local HTTP server in the background."""
+        if not hasattr(self, 'last_loaded_file'):
+            print("No TIFF file loaded yet.")
+            return
+
+        tiff_dir = os.path.dirname(self.last_loaded_file)
+        print(f"📂 Changing directory to: {tiff_dir}")
+        os.chdir(tiff_dir)
+        script_path = os.path.join(os.path.dirname(__file__), "cors_http_server.py")
+
+        if not os.path.exists(script_path):
+            print(f"❌ Error: {script_path} not found!")
+            return
+
+        if not self.server_process:
+            print("🚀 Starting server...")
+            self.server_process = subprocess.Popen(["python", script_path])
+            time.sleep(1) 
 
     def get_map_html_tab2(self):
         """Return HTML for a side-by-side Leaflet map with a working slider."""
@@ -367,7 +392,7 @@ class Sentinel2App(QWidget):
 
                 function updateBeforeLayer(tiffUrl) {
                     fetch(tiffUrl) 
-                        .then(response => response.arrayBuffer()) 
+                        .then(response => response.arrayBuffer())
                         .then(arrayBuffer => {
                             parseGeoraster(arrayBuffer).then(georaster => {
                                 let newLayer = new GeoRasterLayer({
@@ -617,9 +642,19 @@ class Sentinel2App(QWidget):
         file_path, _ = file_dialog.getOpenFileName(self, "Select Image File", "", "TIFF Files (*.tif *.tiff)")
 
         if file_path:
-            image_url = f"file://{file_path}"  # Send the actual TIFF file URL
+            print(f"TIFF file selected: {file_path}")
+            self.last_loaded_file = file_path  # Store for server directory change
+            self.start_server()  # Ensure the server is started
 
-            # Pass TIFF path to JavaScript
+            tiff_dir = os.path.dirname(file_path)
+            print(f"📁 Files in {tiff_dir}: {os.listdir(tiff_dir)}")
+
+            # Convert local path to HTTP URL
+            file_name = os.path.basename(file_path).replace("\\", "/")
+            image_url = f"http://localhost:8000/{file_name}"
+            print(f"🌍 Image URL: {image_url}")
+
+            # Pass correct HTTP URL to JavaScript
             js_script = f"updateBeforeLayer('{image_url}');"
             self.web_view_tab2.page().runJavaScript(js_script)
 
