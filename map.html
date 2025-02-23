@@ -20,9 +20,32 @@
         [-0.4827527195626835, 117.18218840574627],
         12
       );
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors",
-      }).addTo(map);
+      // Layer ArcGIS World Imagery
+      var arcGISLayer = L.tileLayer(
+        "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "© OpenStreetMap contributors",
+        }
+      );
+
+      // Layer OpenStreetMap
+      var osmLayer = L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          attribution: "© OpenStreetMap contributors",
+        }
+      );
+
+      // Tambahkan layer ArcGIS secara default ke peta
+      arcGISLayer.addTo(map);
+
+      // Tambahkan kontrol layer untuk memungkinkan pengguna memilih antara dua layer
+      var baseLayers = {
+        "ArcGIS World Imagery": arcGISLayer,
+        OpenStreetMap: osmLayer,
+      };
+
+      L.control.layers(baseLayers).addTo(map);
 
       var drawnItems = new L.FeatureGroup();
       map.addLayer(drawnItems);
