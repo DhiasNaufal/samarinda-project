@@ -3,3 +3,5 @@ venv
 origin.py
 __pycache__
 ui/__pycache__
+sentinel_map.html
+

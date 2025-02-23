@@ -182,38 +182,7 @@ class CloudMasking(QWidget):
 
         self.log("Processing Sentinel-2 imagery...")
 
-        # Load Sentinel-2 dataset
-        s2_sr = ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
-        s2_clouds = ee.ImageCollection("COPERNICUS/S2_CLOUD_PROBABILITY")
-
-        # Cloud mask function
-        def mask_clouds(img):
-            clouds = ee.Image(img.get("cloud_mask")).select("probability")
-            is_not_cloud = clouds.lt(self.max_cloud_prob)
-            return img.updateMask(is_not_cloud)
-
-        # Edge masking function
-        def mask_edges(s2_img):
-            return s2_img.updateMask(
-                s2_img.select("B8A").mask().updateMask(s2_img.select("B9").mask())
-            )
-
-        # Apply filtering
-        criteria = ee.Filter.bounds(self.geometry).And(ee.Filter.date(self.start_date, self.end_date))
-        s2_sr_filtered = s2_sr.filter(criteria).map(mask_edges)
-        s2_clouds_filtered = s2_clouds.filter(criteria)
-
-        # Join datasets
-        join = ee.Join.saveFirst("cloud_mask")
-        condition = ee.Filter.equals(leftField="system:index", rightField="system:index")
-        s2_sr_with_cloud_mask = join.apply(s2_sr_filtered, s2_clouds_filtered, condition)
-
-        # Apply cloud masking and create a median composite
-        self.s2_cloud_masked = ee.ImageCollection(s2_sr_with_cloud_mask).map(mask_clouds).median()
-
-        # Clip the image using the selected geometry
-        self.s2_clipped = self.s2_cloud_masked.clip(self.geometry)
-
+        self.s2_clipped = process_sentinel2(self.geometry, self.start_date, self.end_date, self.max_cloud_prob)
         self.log("Sentinel-2 processing complete.")
     
     def generate_map(self):
@@ -304,3 +273,17 @@ class CloudMasking(QWidget):
             self.log_window_tab3.append(message)  # Log in Tab 3 (if exists)
 
 
+    def add_ee_layer(self, map_object, ee_image_object, vis_params, name):
+        """Adds a method for displaying Earth Engine image tiles to folium map."""
+        map_id_dict = ee.Image(ee_image_object).getMapId(vis_params)
+
+        # Print tile URL for debugging
+        print(f"Tile URL for {name}: {map_id_dict['tile_fetcher'].url_format}")
+
+        folium.raster_layers.TileLayer(
+            tiles=map_id_dict['tile_fetcher'].url_format,
+            attr='Map Data &copy; <a href="https://earthengine.google.com/">Google Earth Engine</a>',
+            name=name,
+            overlay=True,
+            control=True
+        ).add_to(map_object)
