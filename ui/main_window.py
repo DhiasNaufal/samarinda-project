@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget
 from PyQt6.QtGui import QIcon
 from ui.cloudMasking import CloudMasking
+from ui.superResolution import SuperResolution
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -13,7 +14,7 @@ class MainWindow(QWidget):
         # Tab Widget
         self.tabs = QTabWidget()
         self.tabs.addTab(CloudMasking(self), "Sentinel 2 Cloud Mask")
-        self.tabs.addTab(CloudMasking(self), "Super Resolution")
+        self.tabs.addTab(SuperResolution(self), "Super Resolution")
         self.tabs.addTab(CloudMasking(self), "Klasifikasi Kelapa Sawit")
 
         # Layout
