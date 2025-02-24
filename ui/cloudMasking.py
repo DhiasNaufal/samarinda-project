@@ -30,31 +30,31 @@ class CloudMasking(QWidget):
         main_layout = QVBoxLayout()  
         form_layout = QVBoxLayout()  
         # Project Name
-        self.project_label = QLabel("Google Earth Engine Project Name:")
+        self.project_label = QLabel("Nama Proyek Google Earth Engine:")
         self.project_input = QLineEdit()
         form_layout.addWidget(self.project_label)
         form_layout.addWidget(self.project_input)
 
         # Authenticate Button
-        self.auth_btn = QPushButton("Authenticate and Initialize GEE")
+        self.auth_btn = QPushButton("Autentikasi Akun GEE")
         self.auth_btn.clicked.connect(self.authenticate_gee)
         form_layout.addWidget(self.auth_btn)
 
         # Load GeoJSON Button
-        self.geojson_label = QLabel("Selected GeoJSON: None")
-        self.load_geojson_btn = QPushButton("Load GeoJSON")
+        self.geojson_label = QLabel("Dokumen GeoJSON: Kosong")
+        self.load_geojson_btn = QPushButton("Muat GeoJSON")
         self.load_geojson_btn.clicked.connect(self.load_geojson)
         form_layout.addWidget(self.geojson_label)
         form_layout.addWidget(self.load_geojson_btn)
 
         # Date Selection
         self.date_layout = QHBoxLayout()
-        self.start_date_label = QLabel("Start Date:")
+        self.start_date_label = QLabel("Tanggal Awal:")
         self.start_date_input = QDateEdit()
         self.start_date_input.setCalendarPopup(True)
         self.start_date_input.setDate(self.start_date)
         
-        self.end_date_label = QLabel("End Date:")
+        self.end_date_label = QLabel("Tanggal Akhir:")
         self.end_date_input = QDateEdit()
         self.end_date_input.setCalendarPopup(True)
         self.end_date_input.setDate(QDate.currentDate())
@@ -66,7 +66,7 @@ class CloudMasking(QWidget):
         form_layout.addLayout(self.date_layout)
 
         # Cloud Probability Slider
-        self.cloud_prob_label = QLabel("Max Cloud Probability: 20")
+        self.cloud_prob_label = QLabel("Probabilitas Awan Maksimum: 20")
         self.cloud_prob_slider = QSlider(Qt.Orientation.Horizontal)
         self.cloud_prob_slider.setMinimum(0)
         self.cloud_prob_slider.setMaximum(100)
@@ -78,15 +78,15 @@ class CloudMasking(QWidget):
         form_layout.addWidget(self.cloud_prob_slider)
 
         # Action Buttons
-        self.process_btn = QPushButton("Process Sentinel-2 Data")
+        self.process_btn = QPushButton("Proses Citra Sentinel-2 ")
         self.process_btn.clicked.connect(self.process_geometry)
         form_layout.addWidget(self.process_btn)
 
-        self.map_btn = QPushButton("Generate Map")
+        self.map_btn = QPushButton("Buat Peta")
         self.map_btn.clicked.connect(self.generate_map)
         form_layout.addWidget(self.map_btn)
 
-        self.export_btn = QPushButton("Export Image")
+        self.export_btn = QPushButton("Ekspor Gambar")
         self.export_btn.clicked.connect(self.export_image)
         form_layout.addWidget(self.export_btn)
 
@@ -122,8 +122,7 @@ class CloudMasking(QWidget):
         geojson = json.loads(geojson_str)
         self.geom = geojson['geometry']
         self.geometry = ee.Geometry(self.geom)
-        self.log("Polygon received from map and set as geometry!")
-        print("Polygon received from map and set as geometry!")
+        self.log("Polygon Terbentuk!")
     def load_map_html(self):
         """Load map.html content from file."""
         html_file_path = os.path.join(os.getcwd(), "map.html")
@@ -135,22 +134,22 @@ class CloudMasking(QWidget):
         self.project = self.project_input.text().strip()
 
         if not self.project:
-            self.log("Error: Please enter a project name before authentication!")
+            self.log("Eror: Tolong Masukan Nama Proyek Google Earth Engine!")
             return
         try:
             authenticate_and_initialize(self.project)
-            self.log(f"Authenticated with project: {self.project}")
+            self.log(f"Terautentikasi dengan projek: {self.project}")
         except Exception as e:
-            self.log(f"Authentication failed: {str(e)}")
+            self.log(f"Autentikasi gagal: {str(e)}")
 
     def load_geojson(self):
         """Load a GeoJSON file."""
         file_dialog = QFileDialog()
-        file_path, _ = file_dialog.getOpenFileName(self, "Select GeoJSON File", "", "GeoJSON Files (*.geojson)")
+        file_path, _ = file_dialog.getOpenFileName(self, "Pilih Dokumen GeoJSON", "", "GeoJSON Files (*.geojson)")
 
         if file_path:
             self.geojson_path = file_path
-            self.geojson_label.setText(f"Selected GeoJSON: {file_path}")
+            self.geojson_label.setText(f"Dokumen GeoJSON terpilih: {file_path}")
 
             with open(file_path, "r") as f:
                 geojson = json.load(f)
@@ -158,18 +157,18 @@ class CloudMasking(QWidget):
             if "features" in geojson and len(geojson["features"]) > 0:
                 self.geom = geojson["features"][0]["geometry"]
                 self.geometry = ee.Geometry(self.geom)
-                self.log("GeoJSON loaded successfully!")
+                self.log("GeoJSON berhasil dimuat!")
             else:
-                self.log("Invalid GeoJSON file.")
+                self.log("Dokumen bukan merupakan file GeoJson")
 
     def process_geometry(self):
         """Process Sentinel-2 data."""
         if not self.project:
-            self.log("Error: Please authenticate first!")
+            self.log("Eror: Tolong lakukan autentikasi terlebih dahulu!")
             return
         
         if not self.geometry:
-            self.log("Error: No GeoJSON loaded!")
+            self.log("Eror: Tidak ada dokumen GeoJSON yang dibuat!")
             return
 
         self.start_date = self.start_date_input.date().toString("yyyy-MM-dd")
@@ -177,21 +176,21 @@ class CloudMasking(QWidget):
         project_name = self.project_input.text()
 
         if not project_name:
-            self.log("Error: Enter a project name!")
+            self.log("Eror: Masukan nama proyek terlebih dahulu!")
             return
 
-        self.log("Processing Sentinel-2 imagery...")
+        self.log("Memproses citra Sentinel-2 ...")
 
         self.s2_clipped = process_sentinel2(self.geometry, self.start_date, self.end_date, self.max_cloud_prob)
-        self.log("Sentinel-2 processing complete.")
+        self.log("Proses citra Sentinel-2 berhasil!")
     
     def generate_map(self):
         """Generate and display map with Sentinel-2 imagery."""
         if not self.s2_clipped:
-            self.log("Error: Process Sentinel-2 data first!")
+            self.log("Eror: Lakukan proses citra Sentinel-2 terlebih dahulu!")
             return
 
-        self.log("Generating map...")
+        self.log("Membuat Peta...")
 
         # Calculate center of ROI
         shapely_geom = shape(self.geom)
@@ -219,17 +218,17 @@ class CloudMasking(QWidget):
         m.save(map_path)
         webbrowser.open(map_path)
 
-        self.log("Map generated successfully.")
+        self.log("Peta berhsail dibuat!")
 
     def update_cloud_prob(self, value):
         """Update cloud probability value from slider."""
         self.max_cloud_prob = value
-        self.cloud_prob_label.setText(f"Max Cloud Probability: {value}")
+        self.cloud_prob_label.setText(f"Probabilitas Awan Maksimum: {value}")
 
     def export_image(self):
         """"Export processed Sentinel-2 image."""
         if not self.s2_clipped:
-            self.log("Error: Process Sentinel-2 data first!")
+            self.log("Eror: Proses citra Sentinel-2 terlebih dahulu!")
             return
 
         task = ee.batch.Export.image.toDrive(
@@ -238,7 +237,7 @@ class CloudMasking(QWidget):
         )
         
         task.start()
-        self.log("Export task started. Check Google Drive.")
+        self.log("Proses Ekspor dimulai. Silahkan periksa Drive Google anda.")
 
     def add_log_and_watermark(self, parent_layout):
         """Adds a log window and watermark label to a given layout."""
