@@ -5,3 +5,8 @@ class LogType(Enum):
   WARNING = "Peringatan"
   ERROR = "Eror"
   NONE = ""
+
+class TextType(Enum):
+  STRING = "str"
+  INT = "int"
+  FLOAT = "float"

@@ -14,6 +14,8 @@ from PyQt6.QtCore import pyqtSlot
 from gee.auth import authenticate_gee
 
 from .widgets.log_widget import LogWidget
+from .widgets.text_input_widget import TextInputWidget
+
 from utils.enum import LogType
 
 class CloudMasking(QWidget):
@@ -33,10 +35,8 @@ class CloudMasking(QWidget):
         main_layout = QVBoxLayout()  
         form_layout = QVBoxLayout()  
         # Project Name
-        self.project_label = QLabel("Nama Proyek Google Earth Engine:")
-        self.project_input = QLineEdit()
-        form_layout.addWidget(self.project_label)
-        form_layout.addWidget(self.project_input)
+        self.project_name = TextInputWidget("Nama Proyek Google Earth Engine:")
+        form_layout.addWidget(self.project_name)
 
         # Authenticate Button
         self.auth_btn = QPushButton("Autentikasi Akun GEE")
@@ -137,7 +137,7 @@ class CloudMasking(QWidget):
         return html_content
     
     def authenticate_gee(self):
-        self.project = self.project_input.text().strip()
+        self.project = self.project_name.get_value.strip()
 
         if not self.project:
             self.log_window.log_message("Tolong Masukan Nama Proyek Google Earth Engine!", LogType.ERROR.value)
@@ -179,7 +179,7 @@ class CloudMasking(QWidget):
 
         self.start_date = self.start_date_input.date().toString("yyyy-MM-dd")
         self.end_date = self.end_date_input.date().toString("yyyy-MM-dd")
-        project_name = self.project_input.text()
+        project_name = self.project_name.get_value
 
         if not project_name:
             self.log_window.log_message("Masukan nama proyek terlebih dahulu!", LogType.ERROR.value)
