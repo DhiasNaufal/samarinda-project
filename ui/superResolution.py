@@ -115,7 +115,7 @@ class SuperResolution(QWidget):
         html_file_path = os.path.join(os.getcwd(), "map2.html")
         with open(html_file_path, "r", encoding="utf-8") as file:
             html_content = file.read()
-        return html_content
+        return 
     def add_log_and_watermark(self, parent_layout):
         """Adds a log window and watermark label to a given layout."""
         log_window = QTextEdit()
@@ -125,13 +125,8 @@ class SuperResolution(QWidget):
         log_layout = QVBoxLayout()
         log_layout.addWidget(log_window, 1)
 
-        watermark = QLabel("© Badan Pertanahan Nasional Kantor Wilayah Kalimantan Timur")
-        watermark.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        watermark.setStyleSheet("font-size: 10px; color: black;")
-
         spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         log_layout.addItem(spacer)  # Pushes watermark to the bottom
-        log_layout.addWidget(watermark)
 
         # Append log layout to the form layout (not main_layout)
         parent_layout.addLayout(log_layout)

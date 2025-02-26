@@ -248,13 +248,8 @@ class CloudMasking(QWidget):
         log_layout = QVBoxLayout()
         log_layout.addWidget(log_window, 1)
 
-        watermark = QLabel("© Badan Pertanahan Nasional Kantor Wilayah Kalimantan Timur")
-        watermark.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        watermark.setStyleSheet("font-size: 10px; color: black;")
-
         spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         log_layout.addItem(spacer)  # Pushes watermark to the bottom
-        log_layout.addWidget(watermark)
 
         # Append log layout to the form layout (not main_layout)
         parent_layout.addLayout(log_layout)
