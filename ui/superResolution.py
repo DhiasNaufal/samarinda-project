@@ -7,6 +7,7 @@ from gee.auth import authenticate_and_initialize
 from gee.sentinel2_processing import process_sentinel2
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebChannel import QWebChannel
+from .widgets.log_widget import LogWidget
 class SuperResolution(QWidget):
     def __init__(self,parent=None):
         super().__init__(parent)
@@ -48,7 +49,8 @@ class SuperResolution(QWidget):
         layout.addWidget(self.web_view_tab2)  # Map in the middle
         
         # Add Log and Watermark
-        self.log_window_tab2 = self.add_log_and_watermark(layout)  # Separate log for Tab 2
+        self.log_window_tab2 = LogWidget()
+        layout.addWidget(self.log_window_tab2)
 
         self.setLayout(layout)
         pass
@@ -106,6 +108,7 @@ class SuperResolution(QWidget):
             # Pass correct HTTP URL to JavaScript
             js_script = f"updateBeforeLayer('{image_url}');"
             self.web_view_tab2.page().runJavaScript(js_script)
+            
     def start_super_resolution(self):
         """Placeholder function for Super Resolution process."""
         self.log("Super Resolution Started...")
@@ -116,19 +119,3 @@ class SuperResolution(QWidget):
         with open(html_file_path, "r", encoding="utf-8") as file:
             html_content = file.read()
         return 
-    def add_log_and_watermark(self, parent_layout):
-        """Adds a log window and watermark label to a given layout."""
-        log_window = QTextEdit()
-        log_window.setReadOnly(True)
-        
-        # Vertical layout for log and watermark
-        log_layout = QVBoxLayout()
-        log_layout.addWidget(log_window, 1)
-
-        spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        log_layout.addItem(spacer)  # Pushes watermark to the bottom
-
-        # Append log layout to the form layout (not main_layout)
-        parent_layout.addLayout(log_layout)
-
-        return log_window 

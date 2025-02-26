@@ -13,6 +13,9 @@ from shapely.geometry import shape
 from PyQt6.QtCore import pyqtSlot
 from gee.auth import authenticate_gee
 
+from .widgets.log_widget import LogWidget
+from utils.enum import LogType
+
 class CloudMasking(QWidget):
     def __init__(self,parent=None):
         super().__init__(parent)
@@ -108,10 +111,13 @@ class CloudMasking(QWidget):
         content_layout = QHBoxLayout()
         content_layout.addLayout(form_layout, 1)
         content_layout.addWidget(self.web_view, 2)
-
         main_layout.addLayout(content_layout)
-        self.log_window = self.add_log_and_watermark(main_layout)
+
+        self.log_window = LogWidget()
         self.log_window.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        main_layout.addWidget(self.log_window)
+        
+        # set layout
         self.setLayout(main_layout)  
         # Tambahkan web_view ke layout 
         
@@ -122,7 +128,7 @@ class CloudMasking(QWidget):
         geojson = json.loads(geojson_str)
         self.geom = geojson['geometry']
         self.geometry = ee.Geometry(self.geom)
-        self.log("Polygon Terbentuk!")
+        self.log_window.log_message("Polygon Terbentuk!")
     def load_map_html(self):
         """Load map.html content from file."""
         html_file_path = os.path.join(os.getcwd(), "map.html")
@@ -134,13 +140,13 @@ class CloudMasking(QWidget):
         self.project = self.project_input.text().strip()
 
         if not self.project:
-            self.log("Eror: Tolong Masukan Nama Proyek Google Earth Engine!")
+            self.log_window.log_message("Tolong Masukan Nama Proyek Google Earth Engine!", LogType.ERROR.value)
             return
         try:
             authenticate_and_initialize(self.project)
-            self.log(f"Terautentikasi dengan projek: {self.project}")
+            self.log_window.log_message(f"Terautentikasi dengan projek: {self.project}")
         except Exception as e:
-            self.log(f"Autentikasi gagal: {str(e)}")
+            self.log_window.log_message(f"Autentikasi gagal: {str(e)}")
 
     def load_geojson(self):
         """Load a GeoJSON file."""
@@ -157,18 +163,18 @@ class CloudMasking(QWidget):
             if "features" in geojson and len(geojson["features"]) > 0:
                 self.geom = geojson["features"][0]["geometry"]
                 self.geometry = ee.Geometry(self.geom)
-                self.log("GeoJSON berhasil dimuat!")
+                self.log_window.log_message("GeoJSON berhasil dimuat!")
             else:
-                self.log("Dokumen bukan merupakan file GeoJson")
+                self.log_window.log_message("Dokumen bukan merupakan file GeoJson")
 
     def process_geometry(self):
         """Process Sentinel-2 data."""
         if not self.project:
-            self.log("Eror: Tolong lakukan autentikasi terlebih dahulu!")
+            self.log_window.log_message("Tolong lakukan autentikasi terlebih dahulu!", LogType.ERROR.value)
             return
         
         if not self.geometry:
-            self.log("Eror: Tidak ada dokumen GeoJSON yang dibuat!")
+            self.log_window.log_message("Tidak ada dokumen GeoJSON yang dibuat!", LogType.ERROR.value)
             return
 
         self.start_date = self.start_date_input.date().toString("yyyy-MM-dd")
@@ -176,21 +182,21 @@ class CloudMasking(QWidget):
         project_name = self.project_input.text()
 
         if not project_name:
-            self.log("Eror: Masukan nama proyek terlebih dahulu!")
+            self.log_window.log_message("Masukan nama proyek terlebih dahulu!", LogType.ERROR.value)
             return
 
-        self.log("Memproses citra Sentinel-2 ...")
+        self.log_window.log_message("Memproses citra Sentinel-2 ...")
 
         self.s2_clipped = process_sentinel2(self.geometry, self.start_date, self.end_date, self.max_cloud_prob)
-        self.log("Proses citra Sentinel-2 berhasil!")
+        self.log_window.log_message("Proses citra Sentinel-2 berhasil!")
     
     def generate_map(self):
         """Generate and display map with Sentinel-2 imagery."""
         if not self.s2_clipped:
-            self.log("Eror: Lakukan proses citra Sentinel-2 terlebih dahulu!")
+            self.log_window.log_message("Lakukan proses citra Sentinel-2 terlebih dahulu!", LogType.ERROR.value)
             return
 
-        self.log("Membuat Peta...")
+        self.log_window.log_message("Membuat Peta...")
 
         # Calculate center of ROI
         shapely_geom = shape(self.geom)
@@ -218,7 +224,7 @@ class CloudMasking(QWidget):
         m.save(map_path)
         webbrowser.open(map_path)
 
-        self.log("Peta berhsail dibuat!")
+        self.log_window.log_message("Peta berhsail dibuat!")
 
     def update_cloud_prob(self, value):
         """Update cloud probability value from slider."""
@@ -228,7 +234,7 @@ class CloudMasking(QWidget):
     def export_image(self):
         """"Export processed Sentinel-2 image."""
         if not self.s2_clipped:
-            self.log("Eror: Proses citra Sentinel-2 terlebih dahulu!")
+            self.log_window.log_message("Proses citra Sentinel-2 terlebih dahulu!")
             return
 
         task = ee.batch.Export.image.toDrive(
@@ -237,34 +243,7 @@ class CloudMasking(QWidget):
         )
         
         task.start()
-        self.log("Proses Ekspor dimulai. Silahkan periksa Drive Google anda.")
-
-    def add_log_and_watermark(self, parent_layout):
-        """Adds a log window and watermark label to a given layout."""
-        log_window = QTextEdit()
-        log_window.setReadOnly(True)
-        
-        # Vertical layout for log and watermark
-        log_layout = QVBoxLayout()
-        log_layout.addWidget(log_window, 1)
-
-        spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        log_layout.addItem(spacer)  # Pushes watermark to the bottom
-
-        # Append log layout to the form layout (not main_layout)
-        parent_layout.addLayout(log_layout)
-
-        return log_window  # Return log_window to use it in the tab
-    def log(self, message):
-        """Log messages to all tabs' log windows."""
-        if hasattr(self, 'log_window') and self.log_window:
-            self.log_window.append(message)  # Log in Tab 1
-
-        if hasattr(self, 'log_window_tab2') and self.log_window_tab2:
-            self.log_window_tab2.append(message)  # Log in Tab 2
-
-        if hasattr(self, 'log_window_tab3') and self.log_window_tab3:
-            self.log_window_tab3.append(message)  # Log in Tab 3 (if exists)
+        self.log_window.log_message("Proses Ekspor dimulai. Silahkan periksa Drive Google anda.")
 
 
     def add_ee_layer(self, map_object, ee_image_object, vis_params, name):
