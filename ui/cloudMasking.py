@@ -16,6 +16,7 @@ from gee.auth import authenticate_gee
 from .widgets.log_widget import LogWidget
 from .widgets.text_input_widget import TextInputWidget
 from .widgets.file_input_widget import FileInputWidget
+from .widgets.date_widget import DateWidget
 
 from utils.enum import LogType, FileType
 
@@ -26,8 +27,6 @@ class CloudMasking(QWidget):
         self.project = None
         self.geojson_path = None
         self.geometry = None
-        self.start_date = QDate.fromString("2024-01-01", "yyyy-MM-dd")
-        self.end_date = QDate.fromString("2024-12-01", "yyyy-MM-dd")
         self.max_cloud_prob = 20
         self.s2_clipped = None
         self.initUI()
@@ -56,21 +55,16 @@ class CloudMasking(QWidget):
 
         # Date Selection
         self.date_layout = QHBoxLayout()
-        self.start_date_label = QLabel("Tanggal Awal:")
-        self.start_date_input = QDateEdit()
-        self.start_date_input.setCalendarPopup(True)
-        self.start_date_input.setDate(self.start_date)
-        
-        self.end_date_label = QLabel("Tanggal Akhir:")
-        self.end_date_input = QDateEdit()
-        self.end_date_input.setCalendarPopup(True)
-        self.end_date_input.setDate(QDate.currentDate())
-
-        self.date_layout.addWidget(self.start_date_label)
-        self.date_layout.addWidget(self.start_date_input)
-        self.date_layout.addWidget(self.end_date_label)
-        self.date_layout.addWidget(self.end_date_input)
         form_layout.addLayout(self.date_layout)
+
+        self.start_date = DateWidget(
+            label="Tanggal Awal:",
+            default_value="2024-01-01",
+        )
+        self.date_layout.addWidget(self.start_date)
+        
+        self.end_date = DateWidget(label="Tanggal Akhir:")
+        self.date_layout.addWidget(self.end_date)
 
         # Cloud Probability Slider
         self.cloud_prob_label = QLabel("Probabilitas Awan Maksimum: 20")
@@ -176,8 +170,6 @@ class CloudMasking(QWidget):
             self.log_window.log_message("Tidak ada dokumen GeoJSON yang dibuat!", LogType.ERROR.value)
             return
 
-        self.start_date = self.start_date_input.date().toString("yyyy-MM-dd")
-        self.end_date = self.end_date_input.date().toString("yyyy-MM-dd")
         project_name = self.project_name.get_value
 
         if not project_name:
@@ -186,7 +178,11 @@ class CloudMasking(QWidget):
 
         self.log_window.log_message("Memproses citra Sentinel-2 ...")
 
-        self.s2_clipped = process_sentinel2(self.geometry, self.start_date, self.end_date, self.max_cloud_prob)
+        self.s2_clipped = process_sentinel2(
+            self.geometry, 
+            self.start_date.get_date(), 
+            self.end_date.get_date(), 
+            self.max_cloud_prob)
         self.log_window.log_message("Proses citra Sentinel-2 berhasil!")
     
     def generate_map(self):

@@ -20,3 +20,7 @@ class FileInputType(Enum):
   FILENAME = "filename"
   FILEPATH = "filepath"
   DIRECTORY = "directory"
+
+class LayoutDirection(Enum):
+  VERTICAL = "vertical"
+  HORIZONTAL = "horizontal"
