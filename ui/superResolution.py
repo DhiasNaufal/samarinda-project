@@ -10,6 +10,7 @@ from PyQt6.QtWebChannel import QWebChannel
 
 from .widgets.log_widget import LogWidget
 from .widgets.file_input_widget import FileInputWidget
+from .widgets.button_widget import ButtonWidget
 
 from utils.enum import FileType
 class SuperResolution(QWidget):
@@ -39,7 +40,7 @@ class SuperResolution(QWidget):
         form_layout.addWidget(self.image)
 
          # Start Super Resolution Button
-        self.super_res_btn = QPushButton("Start Super Resolution")
+        self.super_res_btn = ButtonWidget("Start Super Resolution")
         self.super_res_btn.clicked.connect(self.start_super_resolution)
         form_layout.addWidget(self.super_res_btn)
 

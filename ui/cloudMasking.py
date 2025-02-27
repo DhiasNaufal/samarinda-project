@@ -18,6 +18,7 @@ from .widgets.text_input_widget import TextInputWidget
 from .widgets.file_input_widget import FileInputWidget
 from .widgets.date_widget import DateWidget
 from .widgets.slider_widget import SliderWidget
+from .widgets.button_widget import ButtonWidget
 
 from utils.enum import LogType, FileType
 
@@ -39,7 +40,7 @@ class CloudMasking(QWidget):
         form_layout.addWidget(self.project_name)
 
         # Authenticate Button
-        self.auth_btn = QPushButton("Autentikasi Akun GEE")
+        self.auth_btn = ButtonWidget("Autentikasi Akun GEE")
         self.auth_btn.clicked.connect(self.authenticate_gee)
         form_layout.addWidget(self.auth_btn)
 
@@ -74,15 +75,15 @@ class CloudMasking(QWidget):
         form_layout.addWidget(self.max_cloud_prob)
 
         # Action Buttons
-        self.process_btn = QPushButton("Proses Citra Sentinel-2 ")
+        self.process_btn = ButtonWidget("Proses Citra Sentinel-2")
         self.process_btn.clicked.connect(self.process_geometry)
         form_layout.addWidget(self.process_btn)
 
-        self.map_btn = QPushButton("Buat Peta")
+        self.map_btn = ButtonWidget("Buat Peta")
         self.map_btn.clicked.connect(self.generate_map)
         form_layout.addWidget(self.map_btn)
 
-        self.export_btn = QPushButton("Ekspor Gambar")
+        self.export_btn = ButtonWidget("Ekspor Gambar")
         self.export_btn.clicked.connect(self.export_image)
         form_layout.addWidget(self.export_btn)
 
