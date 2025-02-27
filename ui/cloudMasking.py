@@ -17,6 +17,7 @@ from .widgets.log_widget import LogWidget
 from .widgets.text_input_widget import TextInputWidget
 from .widgets.file_input_widget import FileInputWidget
 from .widgets.date_widget import DateWidget
+from .widgets.slider_widget import SliderWidget
 
 from utils.enum import LogType, FileType
 
@@ -27,7 +28,6 @@ class CloudMasking(QWidget):
         self.project = None
         self.geojson_path = None
         self.geometry = None
-        self.max_cloud_prob = 20
         self.s2_clipped = None
         self.initUI()
 
@@ -62,21 +62,16 @@ class CloudMasking(QWidget):
             default_value="2024-01-01",
         )
         self.date_layout.addWidget(self.start_date)
-        
+
         self.end_date = DateWidget(label="Tanggal Akhir:")
         self.date_layout.addWidget(self.end_date)
 
         # Cloud Probability Slider
-        self.cloud_prob_label = QLabel("Probabilitas Awan Maksimum: 20")
-        self.cloud_prob_slider = QSlider(Qt.Orientation.Horizontal)
-        self.cloud_prob_slider.setMinimum(0)
-        self.cloud_prob_slider.setMaximum(100)
-        self.cloud_prob_slider.setValue(20)
-        self.cloud_prob_slider.setTickInterval(10)
-        self.cloud_prob_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
-        self.cloud_prob_slider.valueChanged.connect(self.update_cloud_prob)
-        form_layout.addWidget(self.cloud_prob_label)
-        form_layout.addWidget(self.cloud_prob_slider)
+        self.max_cloud_prob = SliderWidget(
+            label="Probabilitas Awan Maksimum: ",
+            default_value=20
+        )
+        form_layout.addWidget(self.max_cloud_prob)
 
         # Action Buttons
         self.process_btn = QPushButton("Proses Citra Sentinel-2 ")
@@ -220,11 +215,6 @@ class CloudMasking(QWidget):
         webbrowser.open(map_path)
 
         self.log_window.log_message("Peta berhsail dibuat!")
-
-    def update_cloud_prob(self, value):
-        """Update cloud probability value from slider."""
-        self.max_cloud_prob = value
-        self.cloud_prob_label.setText(f"Probabilitas Awan Maksimum: {value}")
 
     def export_image(self):
         """"Export processed Sentinel-2 image."""

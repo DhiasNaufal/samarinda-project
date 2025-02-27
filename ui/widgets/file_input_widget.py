@@ -20,7 +20,7 @@ class FileInputWidget(QWidget):
             parent=None):
         super().__init__(parent)
 
-        self.label_value = label
+        self.default_label = label
         self.button_name = button_name
         self.button_width = button_width
         self.button_color = button_color
@@ -39,8 +39,8 @@ class FileInputWidget(QWidget):
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        if self.label_value:
-            self.label = QLabel(f"{self.label_value} : -")
+        if self.default_label:
+            self.label = QLabel(f"{self.default_label} : -")
             layout.addWidget(self.label)
 
         # Button to choose directory
@@ -69,8 +69,8 @@ class FileInputWidget(QWidget):
 
         if path:
             # change label name
-            if self.label_value:
-                self.label.setText(f"{self.label_value} : {path}")
+            if self.default_label:
+                self.label.setText(f"{self.default_label} : {path}")
 
             # emit the signal
             self.path = path
