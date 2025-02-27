@@ -7,7 +7,11 @@ from gee.auth import authenticate_and_initialize
 from gee.sentinel2_processing import process_sentinel2
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebChannel import QWebChannel
+
 from .widgets.log_widget import LogWidget
+from .widgets.file_input_widget import FileInputWidget
+
+from utils.enum import FileType
 class SuperResolution(QWidget):
     def __init__(self,parent=None):
         super().__init__(parent)
@@ -26,9 +30,13 @@ class SuperResolution(QWidget):
         form_layout = QVBoxLayout()  # Form layout for buttons
 
         # Load Image Button
-        self.load_image_btn = QPushButton("Load Image")
-        self.load_image_btn.clicked.connect(self.load_image)
-        form_layout.addWidget(self.load_image_btn)
+        self.image = FileInputWidget(
+            button_name="Load Image",
+            file_dialog_title="Select Image File",
+            filetype=FileType.TIFF.value
+        )
+        self.image.path_selected.connect(self.on_image_selected)
+        form_layout.addWidget(self.image)
 
          # Start Super Resolution Button
         self.super_res_btn = QPushButton("Start Super Resolution")
@@ -87,11 +95,7 @@ class SuperResolution(QWidget):
             else:
                 self.log("Invalid GeoJSON file.")
 
-    def load_image(self):
-        """Browse and load a TIF image."""
-        file_dialog = QFileDialog()
-        file_path, _ = file_dialog.getOpenFileName(self, "Select Image File", "", "TIFF Files (*.tif *.tiff)")
-
+    def on_image_selected(self, file_path):
         if file_path:
             print(f"TIFF file selected: {file_path}")
             self.last_loaded_file = file_path  # Store for server directory change

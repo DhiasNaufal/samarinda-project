@@ -15,8 +15,9 @@ from gee.auth import authenticate_gee
 
 from .widgets.log_widget import LogWidget
 from .widgets.text_input_widget import TextInputWidget
+from .widgets.file_input_widget import FileInputWidget
 
-from utils.enum import LogType
+from utils.enum import LogType, FileType
 
 class CloudMasking(QWidget):
     def __init__(self,parent=None):
@@ -44,11 +45,14 @@ class CloudMasking(QWidget):
         form_layout.addWidget(self.auth_btn)
 
         # Load GeoJSON Button
-        self.geojson_label = QLabel("Dokumen GeoJSON: Kosong")
-        self.load_geojson_btn = QPushButton("Muat GeoJSON")
-        self.load_geojson_btn.clicked.connect(self.load_geojson)
-        form_layout.addWidget(self.geojson_label)
-        form_layout.addWidget(self.load_geojson_btn)
+        self.geojson = FileInputWidget(
+            label="Dokumen GeoJSON",
+            button_name="Muat GeoJSON",
+            filetype=FileType.GEOJSON.value,
+            file_dialog_title="Pilih Dokumen GeoJSON"
+        )
+        self.geojson.path_selected.connect(self.on_geojson_selected)
+        form_layout.addWidget(self.geojson)
 
         # Date Selection
         self.date_layout = QHBoxLayout()
@@ -148,14 +152,9 @@ class CloudMasking(QWidget):
         except Exception as e:
             self.log_window.log_message(f"Autentikasi gagal: {str(e)}")
 
-    def load_geojson(self):
-        """Load a GeoJSON file."""
-        file_dialog = QFileDialog()
-        file_path, _ = file_dialog.getOpenFileName(self, "Pilih Dokumen GeoJSON", "", "GeoJSON Files (*.geojson)")
-
+    def on_geojson_selected(self, file_path: str):
         if file_path:
             self.geojson_path = file_path
-            self.geojson_label.setText(f"Dokumen GeoJSON terpilih: {file_path}")
 
             with open(file_path, "r") as f:
                 geojson = json.load(f)
