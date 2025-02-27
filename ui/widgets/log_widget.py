@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QSpacerItem, QSizePolicy
-from utils.enum import LogType
+from utils.enum import LogLevel, ColorOptions
 from utils.common import get_current_time
 
 class LogWidget(QWidget):
@@ -14,21 +14,18 @@ class LogWidget(QWidget):
     self.log_window.setReadOnly(True)
     layout.addWidget(self.log_window, 1)
 
-    spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-    layout.addItem(spacer)
-
     self.setLayout(layout)
 
   def log_message(
       self, text: str, 
-      type: str = LogType.NONE.value
+      type: str = LogLevel.NONE.value
   ):
-    if type == LogType.ERROR.value:
-      color = "red"
-    elif type == LogType.WARNING.value:
-      color = "yellow"
+    if type == LogLevel.ERROR.value:
+      color = ColorOptions.RED.value
+    elif type == LogLevel.WARNING.value:
+      color = ColorOptions.Yellow.value
     else:
-      color = "black"
+      color = ColorOptions.BLACK.value
 
     text = f"{get_current_time()}: {f'[{type}]' if type else ''} {text}"
     self.log_window.append(f'<span style="color:{color};">{text}</span>')

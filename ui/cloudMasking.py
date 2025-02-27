@@ -20,7 +20,7 @@ from .widgets.date_widget import DateWidget
 from .widgets.slider_widget import SliderWidget
 from .widgets.button_widget import ButtonWidget
 
-from utils.enum import LogType, FileType
+from utils.enum import LogLevel, FileType
 
 class CloudMasking(QWidget):
     def __init__(self,parent=None):
@@ -134,7 +134,7 @@ class CloudMasking(QWidget):
         self.project = self.project_name.get_value.strip()
 
         if not self.project:
-            self.log_window.log_message("Tolong Masukan Nama Proyek Google Earth Engine!", LogType.ERROR.value)
+            self.log_window.log_message("Tolong Masukan Nama Proyek Google Earth Engine!", LogLevel.ERROR.value)
             return
         try:
             authenticate_and_initialize(self.project)
@@ -159,17 +159,17 @@ class CloudMasking(QWidget):
     def process_geometry(self):
         """Process Sentinel-2 data."""
         if not self.project:
-            self.log_window.log_message("Tolong lakukan autentikasi terlebih dahulu!", LogType.ERROR.value)
+            self.log_window.log_message("Tolong lakukan autentikasi terlebih dahulu!", LogLevel.ERROR.value)
             return
         
         if not self.geometry:
-            self.log_window.log_message("Tidak ada dokumen GeoJSON yang dibuat!", LogType.ERROR.value)
+            self.log_window.log_message("Tidak ada dokumen GeoJSON yang dibuat!", LogLevel.ERROR.value)
             return
 
         project_name = self.project_name.get_value
 
         if not project_name:
-            self.log_window.log_message("Masukan nama proyek terlebih dahulu!", LogType.ERROR.value)
+            self.log_window.log_message("Masukan nama proyek terlebih dahulu!", LogLevel.ERROR.value)
             return
 
         self.log_window.log_message("Memproses citra Sentinel-2 ...")
@@ -184,7 +184,7 @@ class CloudMasking(QWidget):
     def generate_map(self):
         """Generate and display map with Sentinel-2 imagery."""
         if not self.s2_clipped:
-            self.log_window.log_message("Lakukan proses citra Sentinel-2 terlebih dahulu!", LogType.ERROR.value)
+            self.log_window.log_message("Lakukan proses citra Sentinel-2 terlebih dahulu!", LogLevel.ERROR.value)
             return
 
         self.log_window.log_message("Membuat Peta...")
