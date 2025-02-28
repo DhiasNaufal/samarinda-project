@@ -38,8 +38,8 @@ class DateWidget(QWidget):
     self.date.dateChanged.connect(self.on_date_changed)
     layout.addWidget(self.date)
 
-  def on_date_changed(self, date):
-    self.date_changed.emit(date)
+  def on_date_changed(self, date: QDate):
+    self.date_changed.emit(date.toString("yyyy-MM-dd"))
 
   def get_date(self, format="yyyy-MM-dd"):
     return self.date.date().toString(format)

@@ -19,6 +19,7 @@ from .widgets.file_input_widget import FileInputWidget
 from .widgets.date_widget import DateWidget
 from .widgets.slider_widget import SliderWidget
 from .widgets.button_widget import ButtonWidget
+from .widgets.web_viewer_widget import WebViewWidget
 
 from utils.enum import LogLevel, FileType
 
@@ -88,18 +89,8 @@ class CloudMasking(QWidget):
         form_layout.addWidget(self.export_btn)
 
         # Web Map View
-        self.web_view = QWebEngineView()
-        self.web_view.setHtml(self.load_map_html())
-
-        self.web_view.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)  
-        self.web_view.setStyleSheet("QWebEngineView { height: 100%; }")
-        self.web_view.setMinimumHeight(400)  
-
-        # Web Channel
-        self.channel = QWebChannel()
-        self.channel.registerObject("pyqtChannel", self) 
-        self.web_view.page().setWebChannel(self.channel)
-
+        self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "map.html"))
+        self.web_view.geojson_generated.connect(self.on_received_geojson)
 
         # Set Web Channel ke Web View
         content_layout = QHBoxLayout()
@@ -115,20 +106,11 @@ class CloudMasking(QWidget):
         self.setLayout(main_layout)  
         # Tambahkan web_view ke layout 
         
-    @pyqtSlot(str)
-    def receiveGeoJSON(self, geojson_str):
+    def on_received_geojson(self, geojson: dict):
         """Receive GeoJSON data from JavaScript and convert it to EE Geometry."""
-        import json
-        geojson = json.loads(geojson_str)
         self.geom = geojson['geometry']
         self.geometry = ee.Geometry(self.geom)
         self.log_window.log_message("Polygon Terbentuk!")
-    def load_map_html(self):
-        """Load map.html content from file."""
-        html_file_path = os.path.join(os.getcwd(), "map.html")
-        with open(html_file_path, "r", encoding="utf-8") as file:
-            html_content = file.read()
-        return html_content
     
     def authenticate_gee(self):
         self.project = self.project_name.get_value.strip()
@@ -178,7 +160,7 @@ class CloudMasking(QWidget):
             self.geometry, 
             self.start_date.get_date(), 
             self.end_date.get_date(), 
-            self.max_cloud_prob)
+            self.max_cloud_prob.get_value)
         self.log_window.log_message("Proses citra Sentinel-2 berhasil!")
     
     def generate_map(self):

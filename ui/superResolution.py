@@ -11,6 +11,7 @@ from PyQt6.QtWebChannel import QWebChannel
 from .widgets.log_widget import LogWidget
 from .widgets.file_input_widget import FileInputWidget
 from .widgets.button_widget import ButtonWidget
+from .widgets.web_viewer_widget import WebViewWidget
 
 from utils.enum import FileType
 class SuperResolution(QWidget):
@@ -45,17 +46,12 @@ class SuperResolution(QWidget):
         form_layout.addWidget(self.super_res_btn)
 
         # Web Map View
-        self.web_view_tab2 = QWebEngineView()
-        self.web_view_tab2.setHtml(self.load_map_html())  # Load map
-        self.web_view_tab2.setMinimumHeight(400)  # Adjust height if needed
-        
-        self.channel_tab2 = QWebChannel()
-        self.channel_tab2.registerObject("pyqtChannel", self)  
-        self.web_view_tab2.page().setWebChannel(self.channel_tab2)
+        self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "map2.html"))
+        self.web_view.geojson_generated.connect(self.on_received_geojson)
 
         # Add widgets in vertical order
         layout.addLayout(form_layout)  # Buttons at the top
-        layout.addWidget(self.web_view_tab2)  # Map in the middle
+        layout.addWidget(self.web_view)  # Map in the middle
         
         # Add Log and Watermark
         self.log_window_tab2 = LogWidget()
@@ -64,6 +60,10 @@ class SuperResolution(QWidget):
         self.setLayout(layout)
         pass
 
+    def on_received_geojson(self, geojson: dict):
+        """Receive GeoJSON data from JavaScript and convert it to EE Geometry."""
+        self.geom = geojson['geometry']
+        self.geometry = ee.Geometry(self.geom)
     
     def authenticate_gee(self):
         self.project = self.project_input.text().strip()
