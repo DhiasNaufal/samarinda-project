@@ -2,15 +2,11 @@ import json
 import os
 import ee
 import webbrowser
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QLineEdit, QFileDialog, QHBoxLayout, QDateEdit, QTextEdit, QSlider, QSpacerItem, QSizePolicy
-from PyQt6.QtCore import QDate, Qt
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSizePolicy
 from gee.auth import authenticate_and_initialize
 from gee.sentinel2_processing import process_sentinel2
-from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtWebChannel import QWebChannel
 import folium
 from shapely.geometry import shape
-from PyQt6.QtCore import pyqtSlot
 from gee.auth import authenticate_gee
 
 from .widgets.log_widget import LogWidget

@@ -1,12 +1,10 @@
 import json
 import os
 import ee
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QLineEdit, QFileDialog, QHBoxLayout, QDateEdit, QTextEdit, QSlider,  QSpacerItem, QSizePolicy
-from PyQt6.QtCore import QDate, Qt
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QFileDialog
+from PyQt6.QtCore import QDate
 from gee.auth import authenticate_and_initialize
 from gee.sentinel2_processing import process_sentinel2
-from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtWebChannel import QWebChannel
 
 from .widgets.log_widget import LogWidget
 from .widgets.file_input_widget import FileInputWidget
