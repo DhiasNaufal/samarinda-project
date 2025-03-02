@@ -1,13 +1,14 @@
 import json
 import os
 import ee
-import webbrowser
+import folium
+
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSizePolicy
+from shapely.geometry import shape
+
+from gee.auth import authenticate_gee
 from gee.auth import authenticate_and_initialize
 from gee.sentinel2_processing import process_sentinel2
-import folium
-from shapely.geometry import shape
-from gee.auth import authenticate_gee
 
 from .widgets.log_widget import LogWidget
 from .widgets.text_input_widget import TextInputWidget
@@ -19,11 +20,12 @@ from .widgets.web_viewer_widget import WebViewWidget
 
 from utils.enum import LogLevel, FileType
 
+from logic.map import Map
+
 class CloudMasking(QWidget):
     def __init__(self,parent=None):
         super().__init__(parent)
         # Initialize attributes
-        self.project = None
         self.geojson_path = None
         self.geometry = None
         self.s2_clipped = None
@@ -107,18 +109,6 @@ class CloudMasking(QWidget):
         self.geom = geojson['geometry']
         self.geometry = ee.Geometry(self.geom)
         self.log_window.log_message("Polygon Terbentuk!")
-    
-    def authenticate_gee(self):
-        self.project = self.project_name.get_value.strip()
-
-        if not self.project:
-            self.log_window.log_message("Tolong Masukan Nama Proyek Google Earth Engine!", LogLevel.ERROR.value)
-            return
-        try:
-            authenticate_and_initialize(self.project)
-            self.log_window.log_message(f"Terautentikasi dengan projek: {self.project}")
-        except Exception as e:
-            self.log_window.log_message(f"Autentikasi gagal: {str(e)}")
 
     def on_geojson_selected(self, file_path: str):
         if file_path:
@@ -133,10 +123,22 @@ class CloudMasking(QWidget):
                 self.log_window.log_message("GeoJSON berhasil dimuat!")
             else:
                 self.log_window.log_message("Dokumen bukan merupakan file GeoJson")
+    
+    def authenticate_gee(self):
+        project_name = self.project_name.get_value.strip()
+
+        if not project_name:
+            self.log_window.log_message("Tolong Masukan Nama Proyek Google Earth Engine!", LogLevel.ERROR.value)
+            return
+        try:
+            authenticate_and_initialize(project_name)
+            self.log_window.log_message(f"Terautentikasi dengan projek: {project_name}")
+        except Exception as e:
+            self.log_window.log_message(f"Autentikasi gagal: {str(e)}")
 
     def process_geometry(self):
         """Process Sentinel-2 data."""
-        if not self.project:
+        if not self.project_name.get_value:
             self.log_window.log_message("Tolong lakukan autentikasi terlebih dahulu!", LogLevel.ERROR.value)
             return
         
@@ -144,9 +146,7 @@ class CloudMasking(QWidget):
             self.log_window.log_message("Tidak ada dokumen GeoJSON yang dibuat!", LogLevel.ERROR.value)
             return
 
-        project_name = self.project_name.get_value
-
-        if not project_name:
+        if not self.project_name.get_value:
             self.log_window.log_message("Masukan nama proyek terlebih dahulu!", LogLevel.ERROR.value)
             return
 
@@ -162,7 +162,7 @@ class CloudMasking(QWidget):
     def generate_map(self):
         """Generate and display map with Sentinel-2 imagery."""
         if not self.s2_clipped:
-            self.log_window.log_message("Lakukan proses citra Sentinel-2 terlebih dahulu!", LogLevel.ERROR.value)
+            self.log_window.log_message("Proses Citra Sentinel-2 terlebih dahulu!", LogLevel.ERROR.value)
             return
 
         self.log_window.log_message("Membuat Peta...")
@@ -172,33 +172,18 @@ class CloudMasking(QWidget):
         minx, miny, maxx, maxy = shapely_geom.bounds
         center = [(miny + maxy) / 2, (minx + maxx) / 2]
 
-        lat, lon = center
+        # Create Map
+        self.map = Map(location=center)
+        self.map.add_ee_layer(self.s2_clipped)
+        self.map.add_roi_layer(self.geom)
+        self.map.save_and_open_map("sentinel_map.html")
 
-        m = folium.Map(location=[lat, lon], zoom_start=12)
-        
-        # Visualization parameters for Sentinel-2
-        rgb_vis = {'min': 0, 'max': 3000, 'bands': ['B4', 'B3', 'B2']}
-        
-        # Add Sentinel-2 image layer
-        self.add_ee_layer(m, self.s2_clipped, rgb_vis, 'Sentinel 2 Masked')
-
-        # Add ROI overlay
-        folium.GeoJson(self.geom, name="ROI").add_to(m)
-
-        # Add layer control
-        m.add_child(folium.LayerControl())
-
-        # Save and open map
-        map_path = "sentinel_map.html"
-        m.save(map_path)
-        webbrowser.open(map_path)
-
-        self.log_window.log_message("Peta berhsail dibuat!")
+        self.log_window.log_message("Peta berhasil dibuat!")
 
     def export_image(self):
         """"Export processed Sentinel-2 image."""
         if not self.s2_clipped:
-            self.log_window.log_message("Proses citra Sentinel-2 terlebih dahulu!")
+            self.log_window.log_message("Proses Citra Sentinel-2 terlebih dahulu!")
             return
 
         task = ee.batch.Export.image.toDrive(
