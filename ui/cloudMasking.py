@@ -6,9 +6,8 @@ import folium
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSizePolicy
 from shapely.geometry import shape
 
-from gee.auth import authenticate_gee
-from gee.auth import authenticate_and_initialize
-from gee.sentinel2_processing import process_sentinel2
+from logic.gee.auth import GEEAuth
+from logic.gee.sentinel2_processing import process_sentinel2
 
 from .widgets.log_widget import LogWidget
 from .widgets.text_input_widget import TextInputWidget
@@ -130,11 +129,13 @@ class CloudMasking(QWidget):
         if not project_name:
             self.log_window.log_message("Tolong Masukan Nama Proyek Google Earth Engine!", LogLevel.ERROR.value)
             return
-        try:
-            authenticate_and_initialize(project_name)
-            self.log_window.log_message(f"Terautentikasi dengan projek: {project_name}")
-        except Exception as e:
-            self.log_window.log_message(f"Autentikasi gagal: {str(e)}")
+        
+        self.GEE_auth_thread = GEEAuth(project_name)
+        self.GEE_auth_thread.finished.connect(lambda message, log_level: self.log_window.log_message(message, log_level))
+        self.GEE_auth_thread.finished.connect(lambda: self.auth_btn.setEnabled(True))
+        self.GEE_auth_thread.finished.connect(self.GEE_auth_thread.deleteLater)
+        self.GEE_auth_thread.start()
+        self.auth_btn.setEnabled(False)
 
     def process_geometry(self):
         """Process Sentinel-2 data."""

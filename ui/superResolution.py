@@ -3,8 +3,8 @@ import os
 import ee
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QFileDialog
 from PyQt6.QtCore import QDate
-from gee.auth import authenticate_and_initialize
-from gee.sentinel2_processing import process_sentinel2
+from logic.gee.auth import authenticate_and_initialize
+from logic.gee.sentinel2_processing import process_sentinel2
 
 from .widgets.log_widget import LogWidget
 from .widgets.file_input_widget import FileInputWidget
