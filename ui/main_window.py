@@ -8,7 +8,7 @@ class MainWindow(QWidget):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("Palm Tree Classification")
-        self.setWindowIcon(QIcon("assets/ugm.png"))
+        self.setWindowIcon(QIcon("assets/img/ugm.png"))
         self.setGeometry(200, 200, 800, 600)
         self.load_stylesheet("assets/css/main.qss")
         

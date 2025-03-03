@@ -4,26 +4,49 @@ Deteksi sawit
 
 Step Menjalankan Scripts
 
-1. Membuat venv
+## Environment Setup
+
+1. Create local virtual environment
 
 ```powershell
- python -m vevn venv
+ python -m venv venv
 ```
 
-2. Aktivasi venv
+2. Activate virtual environment
 
 ```powershell
 .\venv\Scripts\activate
 ```
 
-3. Install Requirements
+3. Install Requirement packages
 
 ```powershell
-pip install samarinda.txt
+pip install -r samarinda.txt
 ```
 
-4. Jalankan Script
+## Running The Application
+
+1. Activate virtual environment
+
+```powershell
+.\venv\Scripts\activate
+```
+
+2. Run the main.py file
 
 ```powershell
 python main.py
+```
+
+## Project Structure
+
+```
+src/
+├── ui/               # UI and Components/widgets
+│   ├── widgets/
+├── logic/            # Business logics
+│   ├── gee/
+├── utils/            # Reusable functions and enums
+├── assets/           # Static files
+├── main.py           # Application entry point
 ```
