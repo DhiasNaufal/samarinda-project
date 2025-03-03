@@ -1,18 +1,22 @@
 import ee
 
-def mask_clouds(img, max_cloud_prob):
+def mask_clouds(img: ee.image, max_cloud_prob: int) -> ee.image:
     """Masking clouds based on cloud probability."""
     clouds = ee.Image(img.get("cloud_mask")).select("probability")
     is_not_cloud = clouds.lt(max_cloud_prob)
     return img.updateMask(is_not_cloud)
 
-def mask_edges(s2_img):
+def mask_edges(s2_img: ee.image) -> ee.image:
     """Masking image edges where there is no valid data."""
     return s2_img.updateMask(
         s2_img.select("B8A").mask().updateMask(s2_img.select("B9").mask())
     )
 
-def process_sentinel2(geometry, start_date, end_date, max_cloud_prob):
+def process_sentinel2(
+        geometry: ee.geometry, 
+        start_date: str, 
+        end_date: str, 
+        max_cloud_prob: int) -> ee.image:
     """Process Sentinel-2 data with cloud masking and clipping."""
     # Load Sentinel-2 dataset
     s2_sr = ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")

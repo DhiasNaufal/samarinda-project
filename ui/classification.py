@@ -2,8 +2,8 @@ import json
 import os
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QLineEdit, QFileDialog, QHBoxLayout, QDateEdit, QTextEdit, QSlider
 from PyQt6.QtCore import QDate, Qt
-from gee.auth import authenticate_and_initialize
-from gee.sentinel2_processing import process_sentinel2
+from logic.gee.auth import authenticate_and_initialize
+from logic.gee.sentinel2_processing import process_sentinel2
 
 class TabClassification(QWidget):
     def __init__(self):
