@@ -45,7 +45,7 @@ class SuperResolution(QWidget):
         form_layout.addWidget(self.super_res_btn)
 
         # Web Map View
-        self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "map2.html"))
+        self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "assets", "map2.html"))
         self.web_view.geojson_generated.connect(self.on_received_geojson)
 
         # Add widgets in vertical order
@@ -119,7 +119,7 @@ class SuperResolution(QWidget):
         
     def load_map_html(self) -> None:
         """Load map.html content from file."""
-        html_file_path = os.path.join(os.getcwd(), "map2.html")
+        html_file_path = os.path.join(os.getcwd(), "assets", "map2.html")
         with open(html_file_path, "r", encoding="utf-8") as file:
             html_content = file.read()
         return 

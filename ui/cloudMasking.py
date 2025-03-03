@@ -87,7 +87,7 @@ class CloudMasking(QWidget):
         form_layout.addWidget(self.export_btn)
 
         # Web Map View
-        self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "map.html"))
+        self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "assets", "map.html"))
         self.web_view.geojson_generated.connect(self.on_received_geojson)
 
         # Set Web Channel ke Web View
