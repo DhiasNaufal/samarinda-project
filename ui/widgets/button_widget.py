@@ -1,16 +1,18 @@
 from PyQt6 import QtWidgets, QtCore
+from typing import Optional
+
 from utils.enum import ColorOptions
 
 class ButtonWidget(QtWidgets.QPushButton):
     def __init__(
             self, 
-            name="...", 
-            margin=10,
-            button_color=ColorOptions.LIGHT_GRAY.value, 
-            button_hover_color=ColorOptions.MEDIUM_GRAY.value,
-            button_font_color="black", 
-            fixed_width=None, 
-            parent=None):
+            name: str = "...", 
+            margin: int = 10,
+            button_color: ColorOptions = ColorOptions.LIGHT_GRAY.value, 
+            button_hover_color: ColorOptions = ColorOptions.MEDIUM_GRAY.value,
+            button_font_color: ColorOptions = ColorOptions.BLACK.value, 
+            fixed_width: int = None, 
+            parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
 
         self.setText(name)

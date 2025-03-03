@@ -3,7 +3,8 @@ import os
 import ee
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QFileDialog
 from PyQt6.QtCore import QDate
-from logic.gee.auth import authenticate_and_initialize
+from typing import Optional
+
 from logic.gee.sentinel2_processing import process_sentinel2
 
 from .widgets.log_widget import LogWidget
@@ -13,7 +14,7 @@ from .widgets.web_viewer_widget import WebViewWidget
 
 from utils.enum import FileType
 class SuperResolution(QWidget):
-    def __init__(self,parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.project = None
         self.geojson_path = None
@@ -24,7 +25,7 @@ class SuperResolution(QWidget):
         self.s2_clipped = None
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         """Initialize the second tab (Placeholder for future functionality)."""
         layout = QVBoxLayout()
         form_layout = QVBoxLayout()  # Form layout for buttons
@@ -58,12 +59,12 @@ class SuperResolution(QWidget):
         self.setLayout(layout)
         pass
 
-    def on_received_geojson(self, geojson: dict):
+    def on_received_geojson(self, geojson: dict) -> None:
         """Receive GeoJSON data from JavaScript and convert it to EE Geometry."""
         self.geom = geojson['geometry']
         self.geometry = ee.Geometry(self.geom)
     
-    def authenticate_gee(self):
+    def authenticate_gee(self) -> None:
         self.project = self.project_input.text().strip()
 
         if not self.project:
@@ -75,7 +76,7 @@ class SuperResolution(QWidget):
         except Exception as e:
             self.log(f"Authentication failed: {str(e)}")
 
-    def load_geojson(self):
+    def load_geojson(self) -> None:
         """Load a GeoJSON file."""
         file_dialog = QFileDialog()
         file_path, _ = file_dialog.getOpenFileName(self, "Select GeoJSON File", "", "GeoJSON Files (*.geojson)")
@@ -94,7 +95,7 @@ class SuperResolution(QWidget):
             else:
                 self.log("Invalid GeoJSON file.")
 
-    def on_image_selected(self, file_path):
+    def on_image_selected(self, file_path: str) -> None:
         if file_path:
             print(f"TIFF file selected: {file_path}")
             self.last_loaded_file = file_path  # Store for server directory change
@@ -112,11 +113,11 @@ class SuperResolution(QWidget):
             js_script = f"updateBeforeLayer('{image_url}');"
             self.web_view_tab2.page().runJavaScript(js_script)
             
-    def start_super_resolution(self):
+    def start_super_resolution(self) -> None:
         """Placeholder function for Super Resolution process."""
         self.log("Super Resolution Started...")
         
-    def load_map_html(self):
+    def load_map_html(self) -> None:
         """Load map.html content from file."""
         html_file_path = os.path.join(os.getcwd(), "map2.html")
         with open(html_file_path, "r", encoding="utf-8") as file:

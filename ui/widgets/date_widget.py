@@ -8,11 +8,11 @@ class DateWidget(QWidget):
 
   def __init__(
       self, 
-      label="",
-      default_value="",
-      layout_direction=LayoutDirection.HORIZONTAL.value,
-      parent=None
-    ):
+      label: str = "",
+      default_value: str = "",
+      layout_direction: LayoutDirection = LayoutDirection.HORIZONTAL.value,
+      parent: QWidget | None = None
+    ) -> None:
     super().__init__(parent)
     
     self.default_value = QDate.fromString(default_value, "yyyy-MM-dd") if default_value else QDate.currentDate()
@@ -21,7 +21,7 @@ class DateWidget(QWidget):
 
     self.init_ui()
 
-  def init_ui(self):
+  def init_ui(self) -> None:
     if self.layout_direction == LayoutDirection.VERTICAL.value:
       layout = QVBoxLayout(self)
       layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -38,10 +38,10 @@ class DateWidget(QWidget):
     self.date.dateChanged.connect(self.on_date_changed)
     layout.addWidget(self.date)
 
-  def on_date_changed(self, date: QDate):
+  def on_date_changed(self, date: QDate) -> None:
     self.date_changed.emit(date.toString("yyyy-MM-dd"))
 
-  def get_date(self, format="yyyy-MM-dd"):
+  def get_date(self, format: str = "yyyy-MM-dd") -> str:
     return self.date.date().toString(format)
 
 

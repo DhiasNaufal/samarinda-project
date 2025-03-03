@@ -1,23 +1,25 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFileDialog
 from PyQt6.QtCore import pyqtSignal, Qt
+
+from typing import Optional
+
 from .button_widget import ButtonWidget
 
-from utils.enum import FileType, FileInputType
-
+from utils.enum import FileType, FileInputType, ColorOptions
 class FileInputWidget(QWidget):
     path_selected = pyqtSignal(str)
 
     def __init__(
             self, 
-            label="", 
-            button_name="Pilih File", 
-            button_width=None, 
-            button_font_color="black", 
-            button_color="#f0f0f0",  
-            filetype=FileType.ALL_FILES.value,
-            file_input_type=FileInputType.FILEPATH.value,
-            file_dialog_title="Pilih File",
-            parent=None):
+            label: str = "", 
+            button_name: str = "Pilih File", 
+            button_width: Optional[int] = None, 
+            button_font_color: ColorOptions = ColorOptions.BLACK.value, 
+            button_color: ColorOptions = ColorOptions.LIGHT_GRAY.value,  
+            filetype: FileType = FileType.ALL_FILES.value,
+            file_input_type: FileInputType = FileInputType.FILEPATH.value,
+            file_dialog_title: str = "Pilih File",
+            parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         self.default_label = label
@@ -35,7 +37,7 @@ class FileInputWidget(QWidget):
 
         self.init_ui()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
@@ -53,7 +55,7 @@ class FileInputWidget(QWidget):
         button.clicked.connect(self.on_button_clicked)
         layout.addWidget(button)
 
-    def on_button_clicked(self):
+    def on_button_clicked(self) -> None:
         """
         """
         if self.file_input_type == FileInputType.FILENAME.value:
@@ -78,7 +80,7 @@ class FileInputWidget(QWidget):
             self.path_selected.emit(path)
 
     @property
-    def get_value(self):
+    def get_value(self) -> str:
         return self.path
 
 

@@ -1,6 +1,8 @@
 from PyQt6.QtWidgets import QWidget, QLabel, QSlider, QVBoxLayout
 from PyQt6.QtCore import Qt
 
+from typing import Optional
+
 class SliderWidget(QWidget):
   def __init__(
       self, 
@@ -9,8 +11,8 @@ class SliderWidget(QWidget):
       tick_interval: int = 20,
       orientation: Qt.Orientation = Qt.Orientation.Horizontal,
       tick_position: QSlider.TickPosition = QSlider.TickPosition.TicksBelow,
-      parent=None
-    ):
+      parent: Optional[QWidget] = None
+    ) -> None:
     super().__init__(parent)
 
     self.default_label = label
@@ -24,10 +26,10 @@ class SliderWidget(QWidget):
 
   def init_ui(
       self,
-      tick_interval,
-      tick_position,
-      orientation
-    ):
+      tick_interval: int,
+      tick_position: QSlider.TickPosition,
+      orientation: Qt.Orientation
+    ) -> None:
     layout = QVBoxLayout(self)
     layout.setAlignment(Qt.AlignmentFlag.AlignTop)    
 
@@ -44,9 +46,9 @@ class SliderWidget(QWidget):
     self.slider.valueChanged.connect(self.on_value_changed)
     layout.addWidget(self.slider)
 
-  def on_value_changed(self, value):
+  def on_value_changed(self, value: int) -> None:
     self.label.setText(f"{self.default_label} {value}")
 
   @property
-  def get_value(self):
+  def get_value(self) -> int:
       return self.slider.value()

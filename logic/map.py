@@ -12,10 +12,10 @@ class Map:
 
     self.create_map(location, zoom_start)
 
-  def create_map(self, location, zoom_start):
+  def create_map(self, location: Sequence[float], zoom_start: int):
     self.map = folium.Map(location=location, zoom_start=zoom_start)
 
-  def add_ee_layer(self, ee_image_object):
+  def add_ee_layer(self, ee_image_object) -> None:
     """Adds a method for displaying Earth Engine image tiles to folium map."""
     rgb_vis = { 'min': 0, 'max': 3000, 'bands': ['B4', 'B3', 'B2'] }
 
@@ -32,12 +32,12 @@ class Map:
         control=True
     ).add_to(self.map)
 
-  def add_roi_layer(self, geom: Geometry):
+  def add_roi_layer(self, geom: Geometry) -> None:
     folium.GeoJson(geom, name="ROI").add_to(self.map)
     
     # add LayerControl immediately
     self.map.add_child(folium.LayerControl())
 
-  def save_and_open_map(self, map_path: str = "sentinel_map.html"):
+  def save_and_open_map(self, map_path: str = "sentinel_map.html") -> None:
     self.map.save(map_path)
     webbrowser.open(map_path)

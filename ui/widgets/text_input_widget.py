@@ -1,15 +1,17 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit
 from PyQt6.QtCore import Qt
-from utils.enum import TextType
 
+from typing import Optional, Union
+
+from utils.enum import TextType
 class TextInputWidget(QWidget):
     def __init__(
             self, 
             label: str = "", 
             defaultValue: TextType = "", 
             type: TextType = TextType.STRING.value, 
-            parent=None
-        ):
+            parent: Optional[QWidget] = None
+        ) -> None:
         super().__init__(parent)
 
         self.label = label
@@ -18,10 +20,10 @@ class TextInputWidget(QWidget):
 
         self.init_ui()
     
-    def set_label(self, label: str = ""):
+    def set_label(self, label: str = "") -> None:
         self.label_widget.setText(label)
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
@@ -37,14 +39,14 @@ class TextInputWidget(QWidget):
         self.input.setReadOnly(read_only)
     
     @property
-    def is_read_only(self):
+    def is_read_only(self) -> bool:
         return self.input.isReadOnly()
 
-    def set_value(self, val: str):
+    def set_value(self, val: str) -> None:
         self.input.setText(val)
 
     @property
-    def get_value(self):
+    def get_value(self) -> Union[float, int, str]:
         if self.type == TextType.FLOAT.value:
             return float(self.input.text())
         elif self.type == TextType.INT.value:

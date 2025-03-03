@@ -4,16 +4,16 @@ from PyQt6.QtWebChannel import QWebChannel
 from PyQt6.QtCore import Qt, pyqtSlot, pyqtSignal
 
 import json
-
+from typing import Optional
 class WebViewWidget(QWidget):
   geojson_generated = pyqtSignal(dict)
 
-  def __init__(self, map_path: str, parent=None):
+  def __init__(self, map_path: str, parent: Optional[QWidget] = None) -> None:
     super().__init__(parent)
 
     self.init_ui(map_path)
 
-  def init_ui(self, map_path: str):
+  def init_ui(self, map_path: str) -> None:
     layout = QVBoxLayout(self)
     layout.setAlignment(Qt.AlignmentFlag.AlignTop)
     
@@ -29,14 +29,14 @@ class WebViewWidget(QWidget):
     self.channel.registerObject("pyqtChannel", self)
     self.web_view.page().setWebChannel(self.channel)
 
-  def load_map(self, map_path: str):
+  def load_map(self, map_path: str) -> None:
     """Load map.html content from file."""
     with open(map_path, "r", encoding="utf-8") as file:
         html_content = file.read()
     return html_content
   
   @pyqtSlot(str)
-  def receiveGeoJSON(self, data: str):
+  def receiveGeoJSON(self, data: str) -> None:
     """Receive GeoJSON data from JavaScript and convert it to EE Geometry."""
     self.data = json.loads(data)
     self.geojson_generated.emit(self.data)

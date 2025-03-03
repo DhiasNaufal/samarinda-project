@@ -5,6 +5,7 @@ import folium
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSizePolicy
 from shapely.geometry import shape
+from typing import Optional
 
 from logic.gee.auth import GEEAuth
 from logic.gee.sentinel2_processing import process_sentinel2
@@ -22,7 +23,7 @@ from utils.enum import LogLevel, FileType
 from logic.map import Map
 
 class CloudMasking(QWidget):
-    def __init__(self,parent=None):
+    def __init__(self, parent : Optional[QWidget] = None) -> None:
         super().__init__(parent)
         # Initialize attributes
         self.geojson_path = None
@@ -30,7 +31,7 @@ class CloudMasking(QWidget):
         self.s2_clipped = None
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         main_layout = QVBoxLayout()  
         form_layout = QVBoxLayout()  
         # Project Name
@@ -103,13 +104,13 @@ class CloudMasking(QWidget):
         self.setLayout(main_layout)  
         # Tambahkan web_view ke layout 
         
-    def on_received_geojson(self, geojson: dict):
+    def on_received_geojson(self, geojson: dict) -> None:
         """Receive GeoJSON data from JavaScript and convert it to EE Geometry."""
         self.geom = geojson['geometry']
         self.geometry = ee.Geometry(self.geom)
         self.log_window.log_message("Polygon Terbentuk!")
 
-    def on_geojson_selected(self, file_path: str):
+    def on_geojson_selected(self, file_path: str) -> None:
         if file_path:
             self.geojson_path = file_path
 
@@ -123,7 +124,7 @@ class CloudMasking(QWidget):
             else:
                 self.log_window.log_message("Dokumen bukan merupakan file GeoJson")
     
-    def authenticate_gee(self):
+    def authenticate_gee(self) -> None:
         project_name = self.project_name.get_value.strip()
 
         if not project_name:
@@ -137,7 +138,7 @@ class CloudMasking(QWidget):
         self.GEE_auth_thread.start()
         self.auth_btn.setEnabled(False)
 
-    def process_geometry(self):
+    def process_geometry(self) -> None:
         """Process Sentinel-2 data."""
         if not self.project_name.get_value:
             self.log_window.log_message("Tolong lakukan autentikasi terlebih dahulu!", LogLevel.ERROR.value)
@@ -160,7 +161,7 @@ class CloudMasking(QWidget):
             self.max_cloud_prob.get_value)
         self.log_window.log_message("Proses citra Sentinel-2 berhasil!")
     
-    def generate_map(self):
+    def generate_map(self) -> None:
         """Generate and display map with Sentinel-2 imagery."""
         if not self.s2_clipped:
             self.log_window.log_message("Proses Citra Sentinel-2 terlebih dahulu!", LogLevel.ERROR.value)
@@ -181,7 +182,7 @@ class CloudMasking(QWidget):
 
         self.log_window.log_message("Peta berhasil dibuat!")
 
-    def export_image(self):
+    def export_image(self) -> None:
         """"Export processed Sentinel-2 image."""
         if not self.s2_clipped:
             self.log_window.log_message("Proses Citra Sentinel-2 terlebih dahulu!")
@@ -194,19 +195,3 @@ class CloudMasking(QWidget):
         
         task.start()
         self.log_window.log_message("Proses Ekspor dimulai. Silahkan periksa Drive Google anda.")
-
-
-    def add_ee_layer(self, map_object, ee_image_object, vis_params, name):
-        """Adds a method for displaying Earth Engine image tiles to folium map."""
-        map_id_dict = ee.Image(ee_image_object).getMapId(vis_params)
-
-        # Print tile URL for debugging
-        print(f"Tile URL for {name}: {map_id_dict['tile_fetcher'].url_format}")
-
-        folium.raster_layers.TileLayer(
-            tiles=map_id_dict['tile_fetcher'].url_format,
-            attr='Map Data &copy; <a href="https://earthengine.google.com/">Google Earth Engine</a>',
-            name=name,
-            overlay=True,
-            control=True
-        ).add_to(map_object)

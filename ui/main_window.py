@@ -5,7 +5,7 @@ from ui.superResolution import SuperResolution
 from PyQt6.QtCore import Qt
 
 class MainWindow(QWidget):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("Palm Tree Classification")
         self.setWindowIcon(QIcon("assets/ugm.png"))
@@ -32,7 +32,8 @@ class MainWindow(QWidget):
         layout.addWidget(self.tabs)
         layout.addLayout(app_footer)
         self.setLayout(layout)
-    def load_stylesheet(self, filename):
+
+    def load_stylesheet(self, filename) -> None:
         try:
             with open(filename, "r") as file:
                 self.setStyleSheet(file.read())
