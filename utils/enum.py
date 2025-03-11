@@ -15,6 +15,7 @@ class FileType(Enum):
   ALL_FILES = "All Files (*)"
   GEOJSON = "GeoJSON Files (*.geojson)"
   TIFF = "TIFF Files (*.tif *.tiff)"
+  PNG = 'PNG FILES (*.png *.PNG)'
 
 class FileInputType(Enum):
   FILENAME = "filename"

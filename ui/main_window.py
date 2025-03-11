@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QHBoxLayout, QLabe
 from PyQt6.QtGui import QIcon
 from ui.cloudMasking import CloudMasking
 from ui.superResolution import SuperResolution
+from ui.classification import Classification
 from PyQt6.QtCore import Qt
 
 class MainWindow(QWidget):
@@ -16,7 +17,7 @@ class MainWindow(QWidget):
         self.tabs = QTabWidget()
         self.tabs.addTab(CloudMasking(self), "Sentinel 2 Cloud Mask")
         self.tabs.addTab(SuperResolution(self), "Super Resolution")
-        self.tabs.addTab(CloudMasking(self), "Klasifikasi Kelapa Sawit")
+        self.tabs.addTab(Classification(self), "Klasifikasi Kelapa Sawit")
 
         # Footer
         app_footer = QHBoxLayout()
