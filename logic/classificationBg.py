@@ -5,6 +5,10 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
+
+import rasterio
+import os
+
 class ClassificationBgProcess(QThread):
     progress = pyqtSignal(str)
 
@@ -128,14 +132,23 @@ class ClassificationBgProcess(QThread):
     # ================================
 
     def save_result(self, mask, output_path):
+        with rasterio.open(self.image_path) as src:
+            meta = src.meta.copy()
+            meta.update(dtype=rasterio.uint8)
+
         seg_img = self.decode_segmentation_mask(mask)
-        cv2.imwrite(output_path, cv2.cvtColor(seg_img, cv2.COLOR_RGB2BGR))
+        image = cv2.cvtColor(seg_img, cv2.COLOR_RGB2BGR)
+        # Convert OpenCV (H, W, C) to Rasterio (Bands, H, W)
+        image = np.transpose(image, (2, 0, 1))  # Rearrange dimensions
+        with rasterio.open(output_path, "w", **meta) as dst:
+            dst.write(image)
+        # cv2.imwrite(output_path, cv2.cvtColor(seg_img, cv2.COLOR_RGB2BGR))
         self.progress.emit(f"Hasil segmentasi disimpan di: {output_path}")
 
     def run(self):
         self.progress.emit("Memuat model...")
-        model = load_model('C:\\Users\\dhias\\Documents\\GeoAI\\Samarinda\\samarinda-project\\best_model_fix.h5', compile=False)
+        model = load_model(os.path.join(os.getcwd(), "best_model_fix.h5"), compile=False)
         self.progress.emit("Melakukan prediksi...")
         mask = self.predict_patched_image(model, self.image_path)
         self.progress.emit("Menyimpan hasil segmentasi...")
-        self.save_result(mask,'C:\\Users\\dhias\\Documents\\GeoAI\\Samarinda\\samarinda-project\\output\\output.png' )
+        self.save_result(mask, os.path.join(os.getcwd(), "data", "res.tif"))

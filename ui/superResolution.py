@@ -45,7 +45,8 @@ class SuperResolution(QWidget):
         form_layout.addWidget(self.super_res_btn)
 
         # Web Map View
-        self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "assets", "map2.html"))
+        # self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "assets", "map2.html"))
+        self.web_view = WebViewWidget(map_url="http://localhost:8000/assets/super_resolution_map.html")
         self.web_view.geojson_generated.connect(self.on_received_geojson)
 
         # Add widgets in vertical order

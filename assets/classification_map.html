@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet GeoTIFF Example</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/georaster"></script>
+    <script src="https://unpkg.com/georaster-layer-for-leaflet"></script>
+    <!-- <script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script> -->
+</head>
+<body>
+    <div id="map" style="height: 500px;"></div>
+
+    <script>
+        // var parseGeoraster = require("georaster");
+        // var GeoRasterLayer = require("georaster-layer-for-leaflet");
+
+        // Initialize Leaflet map
+        // var map = L.map('map').setView([0, 0], 12);
+        // var map = L.map('map').setView([76.3, -124.6], 12);
+        var map = L.map("map").setView(
+          [-0.4827527195626835, 117.18218840574627],
+          12
+        );
+
+        // Add OpenStreetMap basemap
+        var baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Load GeoTIFF        
+        // fetch("https://3d-tiles.s3.ap-southeast-2.amazonaws.com/leaflet/TEST1.tif") // Replace with your actual TIF file path
+        fetch("http://localhost:8000/data/res.tif") // Replace with your actual TIF file path
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => parseGeoraster(arrayBuffer))
+            .then(georasterData => {
+                console.log("hai")
+                let layer = new GeoRasterLayer({
+                    georaster: georasterData,
+                    opacity: 0.8,
+                    resolution: 1024
+                    // pixelValuesToColorFn: values => values[0] === 42 ? '#ffffff' : '#000000',
+                });
+
+                layer.addTo(map);
+                map.fitBounds(layer.getBounds());
+            })
+            .catch(error => console.error(error));
+
+        // Tambahkan kontrol layer untuk memungkinkan pengguna memilih antara dua layer
+        // var baseLayers = {
+        //     "ArcGIS World Imagery": arcGISLayer,
+        //     OpenStreetMap: osmLayer,
+        // };
+        var overlayMaps = {}
+        var rasterLayers = {}
+        var layerControl = L.control.layers({ "Base Map": baseLayer }, overlayMaps).addTo(map);
+        
+        function addRasterLayer(url, layerName) {
+            fetch(url) // Replace with your actual TIF file path
+                .then(response => response.arrayBuffer())
+                .then(arrayBuffer => parseGeoraster(arrayBuffer))
+                .then(georasterData => {
+                    console.log("hai")
+                    let layer = new GeoRasterLayer({
+                        georaster: georasterData,
+                        opacity: 0.8,
+                        resolution: 1024
+                        // pixelValuesToColorFn: values => values[0] === 42 ? '#ffffff' : '#000000',
+                    });
+
+                    // remove old layer if exists
+                    if (rasterLayers[layerName]) {
+                        map.removeLayer(rasterLayers[layerName])
+                    }
+
+                    rasterLayers[layerName] = layer
+                    overlayMaps[layerName] = layer
+                    layerControl.addOverlay(layer, layerName)
+
+                    layer.addTo(map);
+                    map.fitBounds(layer.getBounds());
+                })
+                .catch(error => console.error(error));
+        }
+        
+
+        window.addEventListener("message", function(event) {
+            var data = event.data;
+            if (data.type === "addRaster") {
+                addRasterLayer(data.url, data.layerName)
+            }
+        })
+    </script>
+</body>
+</html>
