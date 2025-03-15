@@ -11,10 +11,11 @@ from .widgets.graphics_view_widget import GraphicsViewWidget
 from .widgets.list_widget import ListWidget
 from .widgets.frame_widget import FrameWdiget
 
-from utils.enum import LogLevel, FileType
+from utils.enum import LogLevel, FileType, FileInputType
 from utils.common import get_filename, get_string_date, get_file_extension
 
-from logic.classificationBg import ClassificationBgProcess
+from logic.classification.classificationBg import ClassificationBgProcess
+from logic.classification.process_result import ProcessResult, save_shapefile, save_geotiff
 
 import json
 import os
@@ -67,32 +68,40 @@ class Classification(QWidget):
         result_frame.add_widget(sawit_frame.frame)
         sawit_title = QLabel("Luas Kelapa Sawit yang Terdeteksi :")
         sawit_frame.add_widget(sawit_title)
-        sawit_total = QLabel("<h1>- Ha</h1>")
-        sawit_frame.add_widget(sawit_total)
+        self.palmoil = QLabel("<h1>- m2</h1>")
+        sawit_frame.add_widget(self.palmoil)
         
         hor_layout = QHBoxLayout()
         result_frame.add_layout(hor_layout)
         left_layout = QVBoxLayout()
         hor_layout.addLayout(left_layout)
-        self.lahan = QLabel("Lahan\t\t- Ha ")
-        self.lahan.setStyleSheet("border: 1px solid lightgray; padding: 2px")
-        left_layout.addWidget(self.lahan)
-        self.urban = QLabel("Urban\t\t- Ha ")
+        self.ground = QLabel("Lahan\t\t- m2 ")
+        self.ground.setStyleSheet("border: 1px solid lightgray; padding: 2px")
+        left_layout.addWidget(self.ground)
+        self.urban = QLabel("Urban\t\t- m2 ")
         self.urban.setStyleSheet("border: 1px solid lightgray; padding: 2px")
         left_layout.addWidget(self.urban)
 
         right_layout = QVBoxLayout()
         hor_layout.addLayout(right_layout)
-        self.hutan = QLabel("Hutan\t\t- Ha ")
+        self.hutan = QLabel("Hutan\t\t- m2 ")
         self.hutan.setStyleSheet("border: 1px solid lightgray; padding: 2px")
         right_layout.addWidget(self.hutan)
-        self.vegetasi = QLabel("Vegetasi\t- Ha ")
-        self.vegetasi.setStyleSheet("border: 1px solid lightgray; padding: 2px")
-        right_layout.addWidget(self.vegetasi)
+        self.vegetation = QLabel("Vegetasi\t- m2 ")
+        self.vegetation.setStyleSheet("border: 1px solid lightgray; padding: 2px")
+        right_layout.addWidget(self.vegetation)
 
-        download_shp = ButtonWidget("Download SHP", margin=0)
+        download_shp = FileInputWidget(
+            button_name="Download SHP", 
+            filetype=FileType.SHP.value,
+            file_input_type=FileInputType.FILENAME.value)
+        download_shp.path_selected.connect(lambda path: save_shapefile(self.result["gdf"], path))
         result_frame.add_widget(download_shp)
-        download_tif = ButtonWidget("Download TIFF", margin=0)
+        download_tif = FileInputWidget(
+            button_name="Download TIFF", 
+            filetype=FileType.TIFF.value,
+            file_input_type=FileInputType.FILENAME.value)
+        download_tif.path_selected.connect(lambda path: save_geotiff(self.result["meta"], self.result["class_array"], path))
         result_frame.add_widget(download_tif)
         
         # raster or vector layers
@@ -127,17 +136,31 @@ class Classification(QWidget):
         self.add_image_layer(filepath)
         self.log_window.log_message("TIF berhasil dimuat!")
 
+    def process_result(self, result):
+        self.result = result
+        for label, area in result["total_area"].items():
+            if label == "ground":
+                self.ground.setText(f"Lahan\t\t {area:.2f} m2")
+            elif label == "hutan":
+                self.hutan.setText(f"Hutan\t\t {area:.2f} m2")
+            elif label == "urban":
+                self.urban.setText(f"Urban\t\t {area:.2f} m2")
+            elif label == "vegetation":
+                self.vegetation.setText(f"Vegetasi\t {area:.2f} m2")
+            elif label == "palmoil":
+                self.palmoil.setText(f"<h1>{area:.2f} m2</h1>")
+
     def startClassification(self):
         #start
-        result_name = f"Hasil - {get_filename(self.imageInput.get_value, ext=False)}-{get_string_date()}.{get_file_extension()}"
-        output_path = os.path.join(os.getcwd(), "output", result_name)
+        result_name = f"Hasil - {get_filename(self.imageInput.get_value, ext=False)}-{get_string_date()}.png"
+        self.temp_output_path = os.path.join(os.getcwd(), "data", result_name)
 
         self.log_window.log_message('Memulai Klasifikasi')
-        self.classification_thread = ClassificationBgProcess(self.imageInput.get_value, output_path, result_name)
+        self.classification_thread = ClassificationBgProcess(self.imageInput.get_value, self.temp_output_path, result_name)
 
         self.classification_thread.progress.connect(lambda message : self.log_window.log_message(message))
-        self.classification_thread.finished.connect(lambda: self.progress_bar2.setVisible(False))
-        self.classification_thread.finished.connect(lambda: self.add_image_layer(output_path))
+        self.classification_thread.result.connect(lambda: self.add_image_layer(self.temp_output_path))
+        self.classification_thread.result.connect(self.process_result)
         self.classification_thread.finished.connect(self.classification_thread.deleteLater)
         self.classification_thread.start()
 

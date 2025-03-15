@@ -8,8 +8,12 @@ from tensorflow.keras.models import load_model
 
 import rasterio
 import os
+
+from .process_result import ProcessResult
+
 class ClassificationBgProcess(QThread):
     progress = pyqtSignal(str)
+    result = pyqtSignal(dict)
 
     def __init__(self,image_path: str, output_path: str, result_name: str, parent : Optional[QObject] = None) -> None:
         super().__init__(parent)
@@ -133,18 +137,18 @@ class ClassificationBgProcess(QThread):
     # ================================
 
     def save_result(self, mask, output_path):
-        with rasterio.open(self.image_path) as src:
-            meta = src.meta.copy()
-            meta.update(dtype=rasterio.uint8)
+        # with rasterio.open(self.image_path) as src:
+        #     meta = src.meta.copy()
+        #     meta.update(dtype=rasterio.uint8)
 
         seg_img = self.decode_segmentation_mask(mask)
-        image = cv2.cvtColor(seg_img, cv2.COLOR_RGB2BGR)
-        # Convert OpenCV (H, W, C) to Rasterio (Bands, H, W)
-        image = np.transpose(image, (2, 0, 1))  # Rearrange dimensions
-        with rasterio.open(output_path, "w", **meta) as dst:
-            dst.write(image)
-        # cv2.imwrite(output_path, cv2.cvtColor(seg_img, cv2.COLOR_RGB2BGR))
-        self.progress.emit(f"Hasil segmentasi disimpan di: {output_path}")
+        # image = cv2.cvtColor(seg_img, cv2.COLOR_RGB2BGR)
+        # # Convert OpenCV (H, W, C) to Rasterio (Bands, H, W)
+        # image = np.transpose(image, (2, 0, 1))  # Rearrange dimensions
+        # with rasterio.open(output_path, "w", **meta) as dst:
+        #     dst.write(image)
+        cv2.imwrite(output_path, cv2.cvtColor(seg_img, cv2.COLOR_RGB2BGR))
+        # self.progress.emit(f"Hasil segmentasi disimpan di: {output_path}")
 
     def run(self):
         self.progress.emit("Memuat model...")
@@ -153,5 +157,20 @@ class ClassificationBgProcess(QThread):
         self.progress.emit("Melakukan prediksi...")
         mask = self.predict_patched_image(model, self.image_path)
         
-        self.progress.emit("Menyimpan hasil segmentasi...")
+        # self.progress.emit("Menyimpan hasil segmentasi...")
         self.save_result(mask, self.output_path)
+        self.progress.emit("Berhasil menyelesaikan proses prediksi...")
+
+        self.progress.emit("Hitung luas area...")
+        process = ProcessResult(self.image_path, self.output_path)
+        total_area = process.calculate_area()
+        self.progress.emit("Proses klasifikasi selesai...")
+        self.result.emit({
+            "total_area": total_area,
+            "gdf": process.gdf, 
+            "meta": process.meta, 
+            "class_array": process.class_array
+        })
+
+
+

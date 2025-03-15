@@ -20,6 +20,7 @@ class FileType(Enum):
   GEOJSON = "GeoJSON Files (*.geojson)"
   TIFF = "TIFF Files (*.tif *.tiff)"
   PNG = 'PNG FILES (*.png *.PNG)'
+  SHP = "SHP Files (*.shp *.SHP)"
 
 class FileInputType(Enum):
   FILENAME = "filename"
