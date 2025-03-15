@@ -46,8 +46,8 @@ class WebViewWidget(QWidget):
     self.data = json.loads(data)
     self.geojson_generated.emit(self.data)
 
-  def add_raster(self, filename: str):
+  def add_raster(self, filename: str, path: str = "output"):
     """Send a command to JavaScript to load a new raster file."""
-    raster_url = f"http://localhost:8000/data/{filename}"
+    raster_url = f"http://localhost:8000/{path}/{filename}"
     script = f'window.postMessage({{"type": "addRaster", "url": "{raster_url}", "layerName": "{filename}"}}, "*");'
     self.web_view.page().runJavaScript(script)

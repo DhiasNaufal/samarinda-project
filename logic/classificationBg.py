@@ -8,13 +8,14 @@ from tensorflow.keras.models import load_model
 
 import rasterio
 import os
-
 class ClassificationBgProcess(QThread):
     progress = pyqtSignal(str)
 
-    def __init__(self,image_path, parent : Optional[QObject] = None) -> None:
+    def __init__(self,image_path: str, output_path: str, result_name: str, parent : Optional[QObject] = None) -> None:
         super().__init__(parent)
         self.image_path = image_path
+        self.result_name = result_name
+        self.output_path = output_path
 
     def normalize_image(self, image):
         return image.astype(np.float32) / 255.0
@@ -148,7 +149,9 @@ class ClassificationBgProcess(QThread):
     def run(self):
         self.progress.emit("Memuat model...")
         model = load_model(os.path.join(os.getcwd(), "best_model_fix.h5"), compile=False)
+
         self.progress.emit("Melakukan prediksi...")
         mask = self.predict_patched_image(model, self.image_path)
+        
         self.progress.emit("Menyimpan hasil segmentasi...")
-        self.save_result(mask, os.path.join(os.getcwd(), "data", "res.tif"))
+        self.save_result(mask, self.output_path)

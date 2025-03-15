@@ -1,8 +1,8 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QHBoxLayout, QLabel
 from PyQt6.QtGui import QIcon
-from ui.cloudMasking import CloudMasking
-from ui.superResolution import SuperResolution
-from ui.classification import Classification
+from ui.cloudMasking_tab import CloudMasking
+from ui.superResolution_tab import SuperResolution
+from ui.classification_tab import Classification
 from PyQt6.QtCore import Qt
 
 class MainWindow(QWidget):
@@ -10,7 +10,7 @@ class MainWindow(QWidget):
         super().__init__()
         self.setWindowTitle("Palm Tree Classification")
         self.setWindowIcon(QIcon("assets/img/ugm.png"))
-        self.setGeometry(200, 200, 800, 600)
+        self.setGeometry(200, 100, 1000, 900)
         self.load_stylesheet("assets/css/main.qss")
         
         # Tab Widget

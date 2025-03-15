@@ -1,5 +1,9 @@
 from enum import Enum
 
+class LayoutType(Enum):
+  VERTICAL = "vertical"
+  HORIZONTAL = "horizontal"
+
 class LogLevel(Enum):
   INFO = "Informasi"
   WARNING = "Peringatan"

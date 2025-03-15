@@ -21,9 +21,6 @@ QDateEdit {
   border-radius: 5px;
   padding: 5px;
 }
-QLabel {
-  font-weight: bold;
-}
 QSlider::groove:horizontal {
   background: #ddd;
   height: 8px;

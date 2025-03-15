@@ -17,6 +17,8 @@ from .widgets.date_widget import DateWidget
 from .widgets.slider_widget import SliderWidget
 from .widgets.button_widget import ButtonWidget
 from .widgets.web_viewer_widget import WebViewWidget
+from .widgets.progress_bar_widget import ProgressBarWidget
+from .widgets.dynamic_widget import DynamicWidget
 
 from utils.enum import LogLevel, FileType
 
@@ -33,15 +35,17 @@ class CloudMasking(QWidget):
 
     def initUI(self) -> None:
         main_layout = QVBoxLayout()  
-        form_layout = QVBoxLayout()  
+        form_widget = DynamicWidget() 
+        form_widget.setFixedWidth(500)
+        # form_widget.set 
         # Project Name
         self.project_name = TextInputWidget("Nama Proyek Google Earth Engine:")
-        form_layout.addWidget(self.project_name)
+        form_widget.add_widget(self.project_name)
 
         # Authenticate Button
         self.auth_btn = ButtonWidget("Autentikasi Akun GEE")
         self.auth_btn.clicked.connect(self.authenticate_gee)
-        form_layout.addWidget(self.auth_btn)
+        form_widget.add_widget(self.auth_btn)
 
         # Load GeoJSON Button
         self.geojson = FileInputWidget(
@@ -51,11 +55,11 @@ class CloudMasking(QWidget):
             file_dialog_title="Pilih Dokumen GeoJSON"
         )
         self.geojson.path_selected.connect(self.on_geojson_selected)
-        form_layout.addWidget(self.geojson)
+        form_widget.add_widget(self.geojson)
 
         # Date Selection
         self.date_layout = QHBoxLayout()
-        form_layout.addLayout(self.date_layout)
+        form_widget.add_layout(self.date_layout)
 
         self.start_date = DateWidget(
             label="Tanggal Awal:",
@@ -71,29 +75,34 @@ class CloudMasking(QWidget):
             label="Probabilitas Awan Maksimum: ",
             default_value=20
         )
-        form_layout.addWidget(self.max_cloud_prob)
+        form_widget.add_widget(self.max_cloud_prob)
+
+        progress_bar = ProgressBarWidget()
+        progress_bar.setVisible(False)
+        form_widget.add_widget(progress_bar)
 
         # Action Buttons
         self.process_btn = ButtonWidget("Proses Citra Sentinel-2")
         self.process_btn.clicked.connect(self.process_geometry)
-        form_layout.addWidget(self.process_btn)
+        form_widget.add_widget(self.process_btn)
 
         self.map_btn = ButtonWidget("Buat Peta")
         self.map_btn.clicked.connect(self.generate_map)
-        form_layout.addWidget(self.map_btn)
+        form_widget.add_widget(self.map_btn)
 
         self.export_btn = ButtonWidget("Ekspor Gambar")
         self.export_btn.clicked.connect(self.export_image)
-        form_layout.addWidget(self.export_btn)
+        form_widget.add_widget(self.export_btn)
 
         # Web Map View
         # self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "assets", "map.html"))
         self.web_view = WebViewWidget(map_url="http://localhost:8000/assets/cloud_mask_map.html")
+        self.web_view.setMinimumWidth(400)
         self.web_view.geojson_generated.connect(self.on_received_geojson)
 
         # Set Web Channel ke Web View
         content_layout = QHBoxLayout()
-        content_layout.addLayout(form_layout, 1)
+        content_layout.addWidget(form_widget, 1)
         content_layout.addWidget(self.web_view, 2)
         main_layout.addLayout(content_layout)
 
@@ -112,6 +121,7 @@ class CloudMasking(QWidget):
         self.log_window.log_message("Polygon Terbentuk!")
 
     def on_geojson_selected(self, file_path: str) -> None:
+        return
         if file_path:
             self.geojson_path = file_path
 

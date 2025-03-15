@@ -43,6 +43,7 @@ class FileInputWidget(QWidget):
 
         if self.default_label:
             self.label = QLabel(f"{self.default_label} : -")
+            self.label.setWordWrap(True)
             layout.addWidget(self.label)
 
         # Button to choose directory
