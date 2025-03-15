@@ -10,6 +10,7 @@ from .widgets.progress_bar_widget import ProgressBarWidget
 from .widgets.graphics_view_widget import GraphicsViewWidget
 from .widgets.list_widget import ListWidget
 from .widgets.frame_widget import FrameWdiget
+from .widgets.message_box_widget import CustomMessageBox, QMessageBox
 
 from utils.enum import LogLevel, FileType, FileInputType
 from utils.common import get_filename, get_string_date, get_file_extension
@@ -42,7 +43,6 @@ class Classification(QWidget):
             filetype=FileType.TIFF.value,
             file_dialog_title="Pilih Dokumen TIF"
         )
-
         self.imageInput.path_selected.connect(self.info)
         form_layout.addWidget(self.imageInput)
   
@@ -151,6 +151,26 @@ class Classification(QWidget):
                 self.palmoil.setText(f"<h1>{area:.2f} m2</h1>")
 
     def startClassification(self):
+        if self.imageInput.get_value == "":
+            message = CustomMessageBox(
+                parent=self,
+                title="Warning",
+                message="Mohon untuk memilih Gambar terlebih dahulu",
+                icon=QMessageBox.Icon.Warning
+            )
+            message.show()
+            return
+
+        if self.model_dropdown.get_value != "U-Net":
+            message = CustomMessageBox(
+                parent=self,
+                title="Warning",
+                message=f"Model {self.model_dropdown.get_value} saat ini belum tersedia",
+                icon=QMessageBox.Icon.Warning
+            )
+            message.show()
+            return
+        
         #start
         result_name = f"Hasil - {get_filename(self.imageInput.get_value, ext=False)}-{get_string_date()}.png"
         self.temp_output_path = os.path.join(os.getcwd(), "data", result_name)
