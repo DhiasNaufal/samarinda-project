@@ -29,6 +29,9 @@ class ListWidget(QListWidget):
         item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
         item.setCheckState(Qt.CheckState.Checked)
         self.addItem(item)
+    
+    def clear_data(self):
+        self.clear()
 
     def get_checked_items(self):
         """Return a list of checked options."""

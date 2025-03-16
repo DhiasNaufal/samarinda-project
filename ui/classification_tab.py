@@ -136,6 +136,11 @@ class Classification(QWidget):
         self.graphics_view.load_raster(filepath)
     
     def info(self, filepath: str):
+        # remove all existing data on the qgraphicsview and layer lists
+        self.graphics_view.clear_data()
+        self.layer.clear_data()
+
+        # Add new layer
         self.imageInput.set_label(f"Dokumen Gambar : {filepath}")
         self.add_image_layer(filepath)
         self.log_window.log_message("TIF berhasil dimuat!")

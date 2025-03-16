@@ -59,6 +59,11 @@ class GraphicsViewWidget(QWidget):
     item: QGraphicsPixmapItem = self.layer_items.get(name)
     if item:
        item.setVisible(not item.isVisible())
+  
+  def clear_data(self):
+     self.z_values = []
+     self.layer_items = {}
+     self.scene.clear()
 
 class GraphicsView(QGraphicsView):
     def __init__(self, scene):
