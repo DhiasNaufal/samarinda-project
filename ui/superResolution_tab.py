@@ -56,8 +56,9 @@ class SuperResolution(QWidget):
         layout.addWidget(self.web_view)  # Map in the middle
         
         # Add Log and Watermark
-        self.log_window_tab2 = LogWidget()
-        layout.addWidget(self.log_window_tab2)
+        self.log_window = LogWidget()
+        self.log_window.setFixedHeight(200)
+        layout.addWidget(self.log_window)
 
         self.setLayout(layout)
         pass

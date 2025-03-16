@@ -109,6 +109,7 @@ class CloudMasking(QWidget):
         main_layout.addLayout(content_layout)
 
         self.log_window = LogWidget()
+        self.log_window.setFixedHeight(200)
         self.log_window.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         main_layout.addWidget(self.log_window)
         
@@ -140,7 +141,7 @@ class CloudMasking(QWidget):
             return
         
         if file_path:
-            self.geojson.set_label(f"Dokumen GeoJSON - {file_path}")
+            self.geojson.set_label(f"Dokumen GeoJSON : {file_path}")
             self.geojson_path = file_path
 
             with open(file_path, "r") as f:

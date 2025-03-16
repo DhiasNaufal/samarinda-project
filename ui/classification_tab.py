@@ -110,7 +110,7 @@ class Classification(QWidget):
         label = QLabel("Layers")
         form_layout.add_widget(label)
         self.layer = ListWidget()
-        self.layer.setMinimumHeight(100)
+        self.layer.setFixedHeight(100)
         self.layer.item_changed.connect(lambda name: self.graphics_view.toggle_layer(name))
         form_layout.add_widget(self.layer)
 
@@ -127,6 +127,7 @@ class Classification(QWidget):
         main_layout.addLayout(content_layout)
 
         self.log_window = LogWidget()
+        self.log_window.setFixedHeight(200)
         main_layout.addWidget(self.log_window)
 
     def add_image_layer(self, filepath):
