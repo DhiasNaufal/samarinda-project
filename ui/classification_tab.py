@@ -17,7 +17,7 @@ from utils.enum import LogLevel, FileType, FileInputType
 from utils.common import get_filename, get_string_date, get_file_extension
 
 from logic.classification.classificationBg import ClassificationBgProcess
-from logic.classification.process_result import ProcessResult, save_shapefile, save_geotiff
+from logic.classification.process_result import ProcessResult, save_vector, save_geotiff
 
 import json
 import os
@@ -101,7 +101,7 @@ class Classification(QWidget):
             button_name="Download SHP", 
             filetype=FileType.SHP.value,
             file_input_type=FileInputType.FILENAME.value)
-        download_shp.path_selected.connect(lambda path: save_shapefile(self.result["gdf"], path))
+        download_shp.path_selected.connect(lambda path: save_vector(self.result["gdf"], path))
         result_frame.add_widget(download_shp)
         download_tif = FileInputWidget(
             button_name="Download TIFF", 
@@ -109,12 +109,18 @@ class Classification(QWidget):
             file_input_type=FileInputType.FILENAME.value)
         download_tif.path_selected.connect(lambda path: save_geotiff(self.result["meta"], self.result["class_array"], path))
         result_frame.add_widget(download_tif)
+        download_geojson = FileInputWidget(
+            button_name="Download GeoJSON", 
+            filetype=FileType.GEOJSON.value,
+            file_input_type=FileInputType.FILENAME.value)
+        download_geojson.path_selected.connect(lambda path: save_vector(self.result["gdf"], path))
+        result_frame.add_widget(download_geojson)
         
         # raster or vector layers
         label = QLabel("Layers")
         form_layout.add_widget(label)
         self.layer = ListWidget()
-        self.layer.setFixedHeight(100)
+        # self.layer.setFixedHeight(100)
         self.layer.item_changed.connect(lambda name: self.graphics_view.toggle_layer(name))
         form_layout.add_widget(self.layer)
 
@@ -131,7 +137,7 @@ class Classification(QWidget):
         main_layout.addLayout(content_layout)
 
         self.log_window = LogWidget()
-        self.log_window.setFixedHeight(200)
+        # self.log_window.setFixedHeight(200)
         main_layout.addWidget(self.log_window)
 
     def add_image_layer(self, filepath):

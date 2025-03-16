@@ -47,14 +47,14 @@ class FileInputWidget(QWidget):
             layout.addWidget(self.label)
 
         # Button to choose directory
-        button = ButtonWidget(
+        self.button = ButtonWidget(
             name=self.button_name, 
             button_color=self.button_color, 
             button_font_color=self.button_font_color,
             margin=0,
             fixed_width=self.button_width)
-        button.clicked.connect(self.on_button_clicked)
-        layout.addWidget(button)
+        self.button.clicked.connect(self.on_button_clicked)
+        layout.addWidget(self.button)
 
     def on_button_clicked(self) -> None:
         """

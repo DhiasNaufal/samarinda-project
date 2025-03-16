@@ -6,9 +6,16 @@ from shapely.geometry import shape
 from scipy.spatial import cKDTree
 from PIL import Image
 
-def save_shapefile(gdf: gpd.GeoDataFrame, output_path: str):
-  gdf.to_file(output_path)
-  print(f"Shapefile berhasil disimpan: {output_path}")
+from utils.common import get_file_extension
+
+def save_vector(gdf: gpd.GeoDataFrame, output_path: str):
+  ext = get_file_extension(output_path)
+  if ext == "shp":
+    gdf.to_file(output_path)
+    print(f"Shapefile berhasil disimpan : {output_path}")
+  elif ext == "geojson":
+    gdf.to_file(output_path, driver="GeoJSON")
+    print(f"Geojson file berhasil disimpan : {output_path}")
 
 def save_geotiff(meta, class_array, output_path: str, nodata_value=255):
   meta.update({"dtype": rasterio.uint8, "nodata": nodata_value, "count": 1})

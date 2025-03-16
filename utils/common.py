@@ -18,6 +18,6 @@ def get_string_date():
     return formatted_time
 
 def get_file_extension(filepath: str = ""):
-    splitted = filepath.split(".")
+    splitted = filepath.lower().split(".")
     
     return splitted[len(splitted)-1]
