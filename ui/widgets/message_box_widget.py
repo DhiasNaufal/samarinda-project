@@ -1,5 +1,4 @@
 from PyQt6.QtWidgets import QMessageBox, QWidget
-from utils.enum import MessageBoxType
 
 class CustomMessageBox():
   def __init__(
