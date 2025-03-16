@@ -30,6 +30,7 @@ class Classification(QWidget):
         os.environ["SM_FRAMEWORK"] = "tf.keras"
         self.initUI()
         self.calculate_temp = 0
+        self.temp_output_path = None
 
     def initUI(self):
         # set main layout
@@ -58,6 +59,9 @@ class Classification(QWidget):
         self.start_process.clicked.connect(self.startClassification)
         form_layout.add_widget(self.start_process)
 
+        self.progress_bar = ProgressBarWidget()
+        self.progress_bar.setVisible(False)
+        form_layout.add_widget(self.progress_bar)
 
         # classification result frame
         result_frame = FrameWdiget()
@@ -136,6 +140,10 @@ class Classification(QWidget):
 
         self.graphics_view.load_raster(filepath)
     
+    def remove_image_layer(self, layer_name):
+        self.layer.remove_item(layer_name)
+        self.graphics_view.remove_raster(layer_name)
+    
     def info(self, filepath: str):
         # remove all existing data on the qgraphicsview and layer lists
         self.graphics_view.clear_data()
@@ -147,6 +155,8 @@ class Classification(QWidget):
         self.log_window.log_message("TIF berhasil dimuat!")
 
     def process_result(self, result):
+        self.add_image_layer(self.temp_output_path)
+
         self.result = result
         for label, area in result["total_area"].items():
             if label == "ground":
@@ -181,6 +191,11 @@ class Classification(QWidget):
             message.show()
             return
         
+        # Remove current result if exists
+        if self.temp_output_path is not None:
+            name = get_filename(self.temp_output_path, ext=False)
+            self.remove_image_layer(name)
+
         #start
         result_name = f"Hasil - {get_filename(self.imageInput.get_value, ext=False)}-{get_string_date()}.png"
         self.temp_output_path = os.path.join(os.getcwd(), "data", result_name)
@@ -188,9 +203,11 @@ class Classification(QWidget):
         self.log_window.log_message('Memulai Klasifikasi')
         self.classification_thread = ClassificationBgProcess(self.imageInput.get_value, self.temp_output_path, result_name)
 
+        self.classification_thread.started.connect(lambda: self.progress_bar.setVisible(True))
         self.classification_thread.progress.connect(lambda message : self.log_window.log_message(message))
-        self.classification_thread.result.connect(lambda: self.add_image_layer(self.temp_output_path))
+        # self.classification_thread.result.connect(lambda: self.add_image_layer(self.temp_output_path))
         self.classification_thread.result.connect(self.process_result)
         self.classification_thread.finished.connect(self.classification_thread.deleteLater)
+        self.classification_thread.finished.connect(lambda: self.progress_bar.setVisible(False))
         self.classification_thread.start()
 

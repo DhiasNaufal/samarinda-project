@@ -59,6 +59,11 @@ class GraphicsViewWidget(QWidget):
     item: QGraphicsPixmapItem = self.layer_items.get(name)
     if item:
        item.setVisible(not item.isVisible())
+
+  def remove_raster(self, name):
+     item: QGraphicsPixmapItem = self.layer_items.get(name)
+     self.scene.removeItem(item)
+     del self.layer_items[name]
   
   def clear_data(self):
      self.z_values = []

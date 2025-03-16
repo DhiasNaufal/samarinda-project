@@ -29,6 +29,12 @@ class ListWidget(QListWidget):
         item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
         item.setCheckState(Qt.CheckState.Checked)
         self.addItem(item)
+
+    def remove_item(self, item_name):
+        for i in range(self.count()):
+            if self.item(i).text() == item_name:
+                self.takeItem(i)
+                break
     
     def clear_data(self):
         self.clear()
