@@ -154,6 +154,7 @@ class Classification(QWidget):
         # remove all existing data on the qgraphicsview and layer lists
         self.graphics_view.clear_data()
         self.layer.clear_data()
+        self.temp_output_path = None
 
         # Add new layer
         self.imageInput.set_label(f"Dokumen Gambar : {filepath}")
