@@ -10,7 +10,13 @@ class DynamicWidget(QWidget):
     self.init_ui(layout_type)
   
   def init_ui(self, layout_type):
-    self.main_layout = QVBoxLayout(self) if layout_type == LayoutType.VERTICAL.value else QHBoxLayout(self)
+    if layout_type == LayoutType.VERTICAL.value:
+      self.main_layout = QVBoxLayout(self)
+      self.main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+    else:
+      self.main_layout = QHBoxLayout(self)
+      self.main_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
     self.setLayout(self.main_layout)
 
   def add_widget(self, widget: QWidget):

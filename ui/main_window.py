@@ -10,7 +10,7 @@ class MainWindow(QWidget):
         super().__init__()
         self.setWindowTitle("Palm Tree Classification")
         self.setWindowIcon(QIcon("assets/img/ugm.png"))
-        self.setGeometry(200, 100, 1000, 900)
+        self.setGeometry(200, 100, 1200, 900)
         self.load_stylesheet("assets/css/main.qss")
         
         # Tab Widget

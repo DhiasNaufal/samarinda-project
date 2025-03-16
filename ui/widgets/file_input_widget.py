@@ -73,12 +73,15 @@ class FileInputWidget(QWidget):
 
         if path:
             # change label name
-            if self.default_label:
-                self.label.setText(f"{self.default_label} : {path}")
+            # if self.default_label:
+            #     self.label.setText(f"{self.default_label} : {path}")
 
             # emit the signal
             self.path = path
             self.path_selected.emit(path)
+
+    def set_label(self, label: str):
+        self.label.setText(label)
 
     @property
     def get_value(self) -> str:

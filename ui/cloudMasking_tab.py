@@ -19,6 +19,7 @@ from .widgets.button_widget import ButtonWidget
 from .widgets.web_viewer_widget import WebViewWidget
 from .widgets.progress_bar_widget import ProgressBarWidget
 from .widgets.dynamic_widget import DynamicWidget
+from .widgets.message_box_widget import CustomMessageBox, QMessageBox
 
 from utils.enum import LogLevel, FileType
 
@@ -32,6 +33,7 @@ class CloudMasking(QWidget):
         self.geometry = None
         self.s2_clipped = None
         self.initUI()
+        self.is_authenticated = False
 
     def initUI(self) -> None:
         main_layout = QVBoxLayout()  
@@ -95,9 +97,9 @@ class CloudMasking(QWidget):
         form_widget.add_widget(self.export_btn)
 
         # Web Map View
-        # self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "assets", "map.html"))
-        self.web_view = WebViewWidget(map_url="http://localhost:8000/assets/cloud_mask_map.html")
-        self.web_view.setMinimumWidth(400)
+        self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "assets", "cloud_mask_map.html"))
+        # self.web_view = WebViewWidget(map_url="http://localhost:8000/assets/cloud_mask_map.html")
+        self.web_view.setMinimumWidth(500)
         self.web_view.geojson_generated.connect(self.on_received_geojson)
 
         # Set Web Channel ke Web View
@@ -115,14 +117,30 @@ class CloudMasking(QWidget):
         # Tambahkan web_view ke layout 
         
     def on_received_geojson(self, geojson: dict) -> None:
+        if not self.is_authenticated:
+            message = CustomMessageBox(
+                message="Data gagal dimuat. Mohon lakukan \"Autentikasi Akun GEE\" terlebih dahulu dan hapus Polygon yang telah dibuat pada Peta",
+                icon=QMessageBox.Icon.Warning
+            )
+            message.show()
+            return
+
         """Receive GeoJSON data from JavaScript and convert it to EE Geometry."""
         self.geom = geojson['geometry']
         self.geometry = ee.Geometry(self.geom)
         self.log_window.log_message("Polygon Terbentuk!")
 
     def on_geojson_selected(self, file_path: str) -> None:
-        return
+        if not self.is_authenticated:
+            message = CustomMessageBox(
+                message="Data gagal dimuat. Mohon lakukan \"Autentikasi Akun GEE\" terlebih dahulu",
+                icon=QMessageBox.Icon.Warning
+            )
+            message.show()
+            return
+        
         if file_path:
+            self.geojson.set_label(f"Dokumen GeoJSON - {file_path}")
             self.geojson_path = file_path
 
             with open(file_path, "r") as f:
@@ -135,15 +153,24 @@ class CloudMasking(QWidget):
             else:
                 self.log_window.log_message("Dokumen bukan merupakan file GeoJson")
     
+    def handle_auth_finished(self, message, log_level):
+        self.log_window.log_message(message, log_level)
+        if log_level == LogLevel.NONE.value:
+            self.is_authenticated = True
+
     def authenticate_gee(self) -> None:
         project_name = self.project_name.get_value.strip()
 
         if not project_name:
-            self.log_window.log_message("Tolong Masukan Nama Proyek Google Earth Engine!", LogLevel.ERROR.value)
+            mesage = CustomMessageBox(
+                message="Mohon Masukan Nama Proyek Google Earth Engine!",
+                icon=QMessageBox.Icon.Warning
+            )
+            mesage.show()
             return
         
         self.GEE_auth_thread = GEEAuth(project_name)
-        self.GEE_auth_thread.finished.connect(lambda message, log_level: self.log_window.log_message(message, log_level))
+        self.GEE_auth_thread.finished.connect(self.handle_auth_finished)
         self.GEE_auth_thread.finished.connect(lambda: self.auth_btn.setEnabled(True))
         self.GEE_auth_thread.finished.connect(self.GEE_auth_thread.deleteLater)
         self.GEE_auth_thread.start()
@@ -151,31 +178,46 @@ class CloudMasking(QWidget):
 
     def process_geometry(self) -> None:
         """Process Sentinel-2 data."""
+        message = CustomMessageBox(
+            icon=QMessageBox.Icon.Warning
+        )
         if not self.project_name.get_value:
-            self.log_window.log_message("Tolong lakukan autentikasi terlebih dahulu!", LogLevel.ERROR.value)
+            message.set_message("Mohon lakukan \"Autentikasi Akun GEE\" terlebih dahulu!")
+            message.show()
             return
         
         if not self.geometry:
-            self.log_window.log_message("Tidak ada dokumen GeoJSON yang dibuat!", LogLevel.ERROR.value)
+            message.set_message("Tidak ada dokumen GeoJSON yang dibuat!")
+            message.show()
             return
 
         if not self.project_name.get_value:
-            self.log_window.log_message("Masukan nama proyek terlebih dahulu!", LogLevel.ERROR.value)
+            message.set_message("Masukan nama proyek terlebih dahulu!")
+            message.show()
+            return
+        
+        if self.start_date.get_date() > self.end_date.get_date():
+            message.set_message("Tanggal tidak valid. Tanggal akhir harus lebih baru daripada tanggal awal")
+            message.show()
             return
 
         self.log_window.log_message("Memproses citra Sentinel-2 ...")
 
         self.s2_clipped = process_sentinel2(
             self.geometry, 
-            self.start_date.get_date(), 
-            self.end_date.get_date(), 
+            self.start_date.get_date_string(), 
+            self.end_date.get_date_string(), 
             self.max_cloud_prob.get_value)
         self.log_window.log_message("Proses citra Sentinel-2 berhasil!")
     
     def generate_map(self) -> None:
         """Generate and display map with Sentinel-2 imagery."""
         if not self.s2_clipped:
-            self.log_window.log_message("Proses Citra Sentinel-2 terlebih dahulu!", LogLevel.ERROR.value)
+            message = CustomMessageBox(
+                message="Proses Citra Sentinel-2 terlebih dahulu!",
+                icon=QMessageBox.Icon.Warning
+            )
+            message.show()
             return
 
         self.log_window.log_message("Membuat Peta...")
@@ -196,7 +238,11 @@ class CloudMasking(QWidget):
     def export_image(self) -> None:
         """"Export processed Sentinel-2 image."""
         if not self.s2_clipped:
-            self.log_window.log_message("Proses Citra Sentinel-2 terlebih dahulu!")
+            message = CustomMessageBox(
+                message="Proses Citra Sentinel-2 terlebih dahulu!",
+                icon=QMessageBox.Icon.Warning
+            )
+            message.show()
             return
 
         task = ee.batch.Export.image.toDrive(

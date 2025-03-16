@@ -11,6 +11,7 @@ from .widgets.log_widget import LogWidget
 from .widgets.file_input_widget import FileInputWidget
 from .widgets.button_widget import ButtonWidget
 from .widgets.web_viewer_widget import WebViewWidget
+from .widgets.message_box_widget import CustomMessageBox, QMessageBox
 
 from utils.enum import FileType
 class SuperResolution(QWidget):
@@ -32,11 +33,12 @@ class SuperResolution(QWidget):
 
         # Load Image Button
         self.image = FileInputWidget(
-            button_name="Load Image",
+            button_name="Muat Gambar",
             file_dialog_title="Select Image File",
             filetype=FileType.TIFF.value
         )
         self.image.path_selected.connect(self.on_image_selected)
+        self.image.setEnabled(False)
         form_layout.addWidget(self.image)
 
          # Start Super Resolution Button
@@ -45,8 +47,8 @@ class SuperResolution(QWidget):
         form_layout.addWidget(self.super_res_btn)
 
         # Web Map View
-        # self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "assets", "map2.html"))
-        self.web_view = WebViewWidget(map_url="http://localhost:8000/assets/super_resolution_map.html")
+        self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "assets", "super_resolution_map.html"))
+        # self.web_view = WebViewWidget(map_url="http://localhost:8000/assets/super_resolution_map.html")
         self.web_view.geojson_generated.connect(self.on_received_geojson)
 
         # Add widgets in vertical order
@@ -115,6 +117,12 @@ class SuperResolution(QWidget):
             self.web_view_tab2.page().runJavaScript(js_script)
             
     def start_super_resolution(self) -> None:
+        message = CustomMessageBox(
+            message="Fitur ini masih dalam tahap pengembangan",
+            icon=QMessageBox.Icon.Warning
+        )
+        message.show()
+        return
         """Placeholder function for Super Resolution process."""
         self.log("Super Resolution Started...")
         

@@ -11,6 +11,7 @@ from .widgets.graphics_view_widget import GraphicsViewWidget
 from .widgets.list_widget import ListWidget
 from .widgets.frame_widget import FrameWdiget
 from .widgets.message_box_widget import CustomMessageBox, QMessageBox
+from .widgets.dynamic_widget import DynamicWidget
 
 from utils.enum import LogLevel, FileType, FileInputType
 from utils.common import get_filename, get_string_date, get_file_extension
@@ -35,31 +36,32 @@ class Classification(QWidget):
         main_layout = QVBoxLayout(self)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        form_layout = QVBoxLayout()
-        form_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        form_layout = DynamicWidget()
+        form_layout.setFixedWidth(500)
 
         self.imageInput = FileInputWidget(
+            label="Dokumen Gambar",
             button_name="Muat Gambar",
             filetype=FileType.TIFF.value,
             file_dialog_title="Pilih Dokumen TIF"
         )
         self.imageInput.path_selected.connect(self.info)
-        form_layout.addWidget(self.imageInput)
+        form_layout.add_widget(self.imageInput)
   
         self.model_dropdown = DropdownWidget(
             label="Pilih Model",
             dropdown_options=["U-Net", "MVT", "ResNet"]
         )
-        form_layout.addWidget(self.model_dropdown)
+        form_layout.add_widget(self.model_dropdown)
 
         self.start_process = ButtonWidget(name="Mulai Proses Klasifikasi")
         self.start_process.clicked.connect(self.startClassification)
-        form_layout.addWidget(self.start_process)
+        form_layout.add_widget(self.start_process)
 
 
         # classification result frame
         result_frame = FrameWdiget()
-        form_layout.addWidget(result_frame)
+        form_layout.add_widget(result_frame)
 
         title = QLabel("<h3>Hasil Klasifikasi</h3>")
         result_frame.add_widget(title)
@@ -106,20 +108,21 @@ class Classification(QWidget):
         
         # raster or vector layers
         label = QLabel("Layers")
-        form_layout.addWidget(label)
+        form_layout.add_widget(label)
         self.layer = ListWidget()
         self.layer.setMinimumHeight(100)
         self.layer.item_changed.connect(lambda name: self.graphics_view.toggle_layer(name))
-        form_layout.addWidget(self.layer)
+        form_layout.add_widget(self.layer)
 
         # Graphics View (Raster or vector)
         self.graphics_view = GraphicsViewWidget()
+        self.graphics_view.setMinimumWidth(500)
 
         # Content Layout (form and graphics)
         content_layout = QHBoxLayout()
         content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        content_layout.addLayout(form_layout, 1)
+        content_layout.addWidget(form_layout, 1)
         content_layout.addWidget(self.graphics_view, 2)
         main_layout.addLayout(content_layout)
 
@@ -133,6 +136,7 @@ class Classification(QWidget):
         self.graphics_view.load_raster(filepath)
     
     def info(self, filepath: str):
+        self.imageInput.set_label(f"Dokumen Gambar : {filepath}")
         self.add_image_layer(filepath)
         self.log_window.log_message("TIF berhasil dimuat!")
 

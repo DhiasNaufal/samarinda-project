@@ -41,8 +41,11 @@ class DateWidget(QWidget):
   def on_date_changed(self, date: QDate) -> None:
     self.date_changed.emit(date.toString("yyyy-MM-dd"))
 
-  def get_date(self, format: str = "yyyy-MM-dd") -> str:
+  def get_date_string(self, format: str = "yyyy-MM-dd") -> str:
     return self.date.date().toString(format)
+  
+  def get_date(self):
+    return self.date.date()
 
 
     

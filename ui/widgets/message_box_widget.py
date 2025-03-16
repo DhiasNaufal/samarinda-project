@@ -4,7 +4,7 @@ from utils.enum import MessageBoxType
 class CustomMessageBox():
   def __init__(
     self, 
-    title: str = "", 
+    title: str = "Warning",
     message: str = "", 
     parent: QWidget = None, 
     informative_message: str = "", 
@@ -17,6 +17,9 @@ class CustomMessageBox():
     self.buttons = buttons
     self.message = message
     self.informative_message = informative_message
+
+  def set_message(self, message: str):
+    self.message = message
 
   def show(self): 
     message_box = QMessageBox(self.parent)
