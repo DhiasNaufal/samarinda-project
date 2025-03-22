@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFileDialog
 from PyQt6.QtCore import pyqtSignal, Qt
 
-from typing import Optional
+from typing import Optional, List
 
 from .button_widget import ButtonWidget
 
@@ -16,7 +16,7 @@ class FileInputWidget(QWidget):
             button_width: Optional[int] = None, 
             button_font_color: ColorOptions = ColorOptions.BLACK.value, 
             button_color: ColorOptions = ColorOptions.LIGHT_GRAY.value,  
-            filetype: FileType = FileType.ALL_FILES.value,
+            filetype: List[FileType] = [FileType.ALL_FILES.value],
             file_input_type: FileInputType = FileInputType.FILEPATH.value,
             file_dialog_title: str = "Pilih File",
             default_path: str = "",
@@ -31,7 +31,7 @@ class FileInputWidget(QWidget):
 
         # input dialog
         self.file_input_type = file_input_type
-        self.filetype = filetype
+        self.filetype = ";;".join(filetype)
         self.file_dialog_title = file_dialog_title
 
         self.path = default_path

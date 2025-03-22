@@ -35,7 +35,7 @@ class SuperResolution(QWidget):
         self.image = FileInputWidget(
             button_name="Muat Gambar",
             file_dialog_title="Select Image File",
-            filetype=FileType.TIFF.value
+            filetype=[FileType.TIFF.value]
         )
         self.image.path_selected.connect(self.on_image_selected)
         self.image.setEnabled(False)

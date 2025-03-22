@@ -43,7 +43,7 @@ class Classification(QWidget):
         self.imageInput = FileInputWidget(
             label="Dokumen Gambar",
             button_name="Muat Gambar",
-            filetype=FileType.TIFF.value,
+            filetype=[FileType.TIFF.value],
             file_dialog_title="Pilih Dokumen TIF"
         )
         self.imageInput.path_selected.connect(self.info)
@@ -105,13 +105,13 @@ class Classification(QWidget):
         result_frame.add_widget(download_shp)
         download_tif = FileInputWidget(
             button_name="Download TIFF", 
-            filetype=FileType.TIFF.value,
+            filetype=[FileType.TIFF.value],
             file_input_type=FileInputType.FILENAME.value)
         download_tif.path_selected.connect(lambda path: save_geotiff(self.result["meta"], self.result["class_array"], path))
         result_frame.add_widget(download_tif)
         download_geojson = FileInputWidget(
             button_name="Download GeoJSON", 
-            filetype=FileType.GEOJSON.value,
+            filetype=[FileType.GEOJSON.value],
             file_input_type=FileInputType.FILENAME.value)
         download_geojson.path_selected.connect(lambda path: save_vector(self.result["gdf"], path))
         result_frame.add_widget(download_geojson)

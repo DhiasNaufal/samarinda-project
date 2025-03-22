@@ -53,7 +53,7 @@ class CloudMasking(QWidget):
         self.geojson = FileInputWidget(
             label="Dokumen GeoJSON",
             button_name="Muat GeoJSON",
-            filetype=FileType.GEOJSON.value,
+            filetype=[FileType.GEOJSON.value],
             file_dialog_title="Pilih Dokumen GeoJSON"
         )
         self.geojson.path_selected.connect(self.on_geojson_selected)

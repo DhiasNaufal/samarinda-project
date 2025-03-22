@@ -54,7 +54,7 @@ class SatelliteImage(QWidget):
 
     self.output_path = FileInputWidget(
       label="Tentukan nama file dan directory",
-      filetype=FileType.PNG.value,
+      filetype=[FileType.TIFF.value, FileType.PNG.value, FileType.JPG.value],
       file_input_type=FileInputType.FILENAME.value,
       default_path=os.path.join(os.getcwd(), "output", f"result {get_string_date()}.png")
     )

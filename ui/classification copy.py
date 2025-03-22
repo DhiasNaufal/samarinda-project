@@ -47,7 +47,7 @@ class Classification(QWidget):
         self.imageInput = FileInputWidget(
             # label="Klasifikasi Kelapa Sawit",
             button_name="Muat Gambar",
-            filetype=FileType.TIFF.value,
+            filetype=[FileType.TIFF.value],
             file_dialog_title="Pilih Dokumen TIF"
         )
 
