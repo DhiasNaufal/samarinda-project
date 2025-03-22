@@ -21,6 +21,7 @@ import os
 class SatelliteImage(QWidget):
   def __init__(self, parent: Optional[QWidget] = None) -> None:
     super().__init__(parent)
+    self.polygon = None
 
     self.init_ui()
 
@@ -53,11 +54,12 @@ class SatelliteImage(QWidget):
     form_layout.addWidget(self.zoom_level)
 
     self.output_path = FileInputWidget(
-      label="Tentukan nama file dan directory",
+      label="Tentukan output file",
       filetype=[FileType.TIFF.value, FileType.PNG.value, FileType.JPG.value],
       file_input_type=FileInputType.FILENAME.value,
-      default_path=os.path.join(os.getcwd(), "output", f"result {get_string_date()}.png")
+      default_path=os.path.join(os.getcwd(), "output", f"result {get_string_date()}.tif")
     )
+    self.output_path.path_selected.connect(lambda path: self.output_path.set_label(f"Tentukan output file : {path}"))
     frame.add_widget(self.output_path)
 
     download_btn = ButtonWidget("Download")
@@ -76,20 +78,25 @@ class SatelliteImage(QWidget):
     self.polygon = Polygon(geom["coordinates"][0])
 
   def download_image(self):
-    message = CustomMessageBox(
+    message_box = CustomMessageBox(
           parent=self,
           title="Info",
-          message="Gambar peta telah berhasil di download",
           icon=QMessageBox.Icon.Information
       )
     
+    if self.polygon is None:
+      message_box.set_message("Pilih Area yang ingin di download terlebih dahulu")
+      message_box.show()
+      return
+
+    message_box.set_message("Gambar peta telah berhasil di download")
     self.download_tile_thread = DownloadTiles(
       tile_provider=self.tile_provider.get_value,
       zoom_level=int(self.zoom_level.get_value),
       polygon=self.polygon,
       output_path=self.output_path.get_value
     )
-    self.download_tile_thread.finished.connect(lambda: message.show())
+    self.download_tile_thread.finished.connect(lambda: message_box.show())
     self.download_tile_thread.finished.connect(self.download_tile_thread.deleteLater)
     self.download_tile_thread.finished.connect(lambda: self.progress_bar.set_progress_range(max=100))
     self.download_tile_thread.started.connect(lambda: self.progress_bar.set_progress_range())

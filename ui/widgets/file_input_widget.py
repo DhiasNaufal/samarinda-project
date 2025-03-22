@@ -19,7 +19,7 @@ class FileInputWidget(QWidget):
             filetype: List[FileType] = [FileType.ALL_FILES.value],
             file_input_type: FileInputType = FileInputType.FILEPATH.value,
             file_dialog_title: str = "Pilih File",
-            default_path: str = "",
+            default_path: str = "-",
             parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
@@ -43,7 +43,7 @@ class FileInputWidget(QWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         if self.default_label:
-            self.label = QLabel(f"{self.default_label} : -")
+            self.label = QLabel(f"{self.default_label} : {self.path}")
             self.label.setWordWrap(True)
             layout.addWidget(self.label)
 
