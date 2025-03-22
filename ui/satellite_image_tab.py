@@ -14,6 +14,7 @@ from .widgets.progress_bar_widget import ProgressBarWidget
 from logic.satellite_image.download_tiles import DownloadTiles
 from logic.satellite_image.tile_providers import TILE_PROVIDERS
 
+from utils.common import get_string_date
 
 import os
 
@@ -55,7 +56,7 @@ class SatelliteImage(QWidget):
       label="Tentukan nama file dan directory",
       filetype=FileType.PNG.value,
       file_input_type=FileInputType.FILENAME.value,
-      default_path=os.path.join(os.getcwd(), "output", "res.png")
+      default_path=os.path.join(os.getcwd(), "output", f"result {get_string_date()}.png")
     )
     frame.add_widget(self.output_path)
 

@@ -40,43 +40,62 @@
         12
       );
 
-      // Layer ArcGIS World Imagery
-      var arcGISLayer = L.tileLayer(
+      /* 
+        Layer ArcGIS World Imagery
+        */
+        var arcGISLayer = L.tileLayer(
         "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
           attribution: "© OpenStreetMap contributors",
         }
       );
 
-      var bingMapsLayer = L.tileLayer(
-        "http://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=1",
-        {
-          subdomains: ['t0', 't1', 't2', 't3'],
-          maxZoom: 21,
-          attribution: "Bing"
+      /* 
+        Layer Bing Maps 
+        */
+      // convert x, y, z to Bing quadkey format
+      function tileToQuadKey(x, y, z) {
+        let quadKey = "";
+        for (let i = z; i > 0; i--) {
+          let digit = 0;
+          let mask = 1 << (i - 1);
+          if ((x & mask) !== 0) digit += 1;
+          if ((y & mask) !== 0) digit += 2;
+          quadKey += digit;
         }
-      )
-      // bing.addTo(map)
+        return quadKey;
+      }
+
+      // Custom Bing Maps TileLayer class
+      L.TileLayer.Bing = L.TileLayer.extend({
+        getTileUrl: function (coords) {
+          let quadKey = tileToQuadKey(coords.x, coords.y, coords.z);
+          return `https://t0.tiles.virtualearth.net/tiles/a${quadKey}.jpeg?g=5179`;
+        },
+      });
+      var bingMapsLayer = new L.TileLayer.Bing({
+        maxZoom: 21,
+        attribution: "© Microsoft Bing Maps",
+      });
       
+      /*
+        Google Satellite 
+        */
       var googleSateliteLayer = L.tileLayer(
         "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
         {
           maxZoom: 21,
-          attribution: "Google",
+          attribution: "© Google Satellite",
           tileSize: 256,
         }
       )
-      // google.addTo(map)
-
-      // Tambahkan layer ArcGIS secara default ke peta
-      arcGISLayer.addTo(map);
-
+      googleSateliteLayer.addTo(map)
 
       // Tambahkan kontrol layer untuk memungkinkan pengguna memilih antara dua layer
       var baseLayers = {
+        "Google Satellite": googleSateliteLayer,
         "ArcGIS World Imagery": arcGISLayer,
-        "Bing": bingMapsLayer,
-        "Google": googleSateliteLayer,
+        "Bing Maps": bingMapsLayer,
       };
 
       L.control.layers(baseLayers).addTo(map);
