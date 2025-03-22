@@ -1,13 +1,17 @@
 import requests
-from shapely.geometry import Polygon
+import mercantile
+import rasterio
+import numpy as np
+
 from io import BytesIO
 from PIL import Image
-import mercantile
-
+from shapely.geometry import Polygon
+from rasterio.transform import from_origin
 from PyQt6.QtCore import QThread, QObject
 from typing import Optional
-from .tile_providers import TILE_PROVIDERS
 
+from .tile_providers import TILE_PROVIDERS
+from utils.common import get_file_extension
 
 class DownloadTiles(QThread):
     def __init__(
@@ -29,7 +33,11 @@ class DownloadTiles(QThread):
     def run(self):
         merged_image, tile_range = self.download_tiles()   
         cropped_image = self.crop_image(merged_image, tile_range)
-        cropped_image.save(self.output_path)     
+
+        if get_file_extension(self.output_path) == "tif":
+            self.save_as_tiff(cropped_image, tile_range)
+        else:
+            cropped_image.save(self.output_path)     
 
     def tile_to_quadkey(self, x, y):
         """Convert tile coordinates to a Bing Maps quadkey."""
@@ -135,3 +143,47 @@ class DownloadTiles(QThread):
         cropped_image = image.crop((x_min, y_min, x_max, y_max))
 
         return cropped_image
+
+    def save_as_tiff(self, image, tile_range):
+        """Save the cropped image as a GeoTIFF with georeferencing."""
+        
+        # Get the pixel resolution (in degrees per pixel)
+        x_min, y_min, _, _ = tile_range
+        tile_size = 256  # Tile size in pixels
+        bbox = mercantile.bounds(x_min, y_min, self.zoom)
+        
+        # Calculate resolution (degrees per pixel)
+        res_x = (bbox.east - bbox.west) / tile_size
+        res_y = (bbox.north - bbox.south) / tile_size
+
+        # Convert the polygon's bounding box to georeferenced coordinates
+        lon_min, lat_min, lon_max, lat_max = self.polygon.bounds
+
+        # Define the transform (upper-left corner and resolution)
+        transform = from_origin(lon_min, lat_max, res_x, res_y)
+
+        # Convert the image to numpy array
+        image_array = np.array(image)
+
+        # Ensure it's 3-band (RGB)
+        if len(image_array.shape) == 2:
+            image_array = np.expand_dims(image_array, axis=2)  # Convert grayscale to 3D
+        if image_array.shape[2] == 4:  # Remove alpha channel if present
+            image_array = image_array[:, :, :3]
+
+        # Write to GeoTIFF
+        with rasterio.open(
+            self.output_path,
+            "w",
+            driver="GTiff",
+            height=image_array.shape[0],
+            width=image_array.shape[1],
+            count=3,  # Number of bands (RGB)
+            dtype=image_array.dtype,
+            crs="EPSG:4326",  # Set to WGS 84
+            transform=transform
+        ) as dst:
+            for i in range(3):  # Save each RGB band separately
+                dst.write(image_array[:, :, i], i + 1)
+
+        print(f"Saved: {self.output_path}")
