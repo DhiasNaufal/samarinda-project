@@ -11,6 +11,7 @@ from .widgets.file_input_widget import FileInputWidget, FileInputType, FileType
 from .widgets.message_box_widget import CustomMessageBox, QMessageBox
 from .widgets.progress_bar_widget import ProgressBarWidget
 
+from logic.satellite_image.download_tiles import DownloadTiles
 from logic.satellite_image.tile_providers import TILE_PROVIDERS
 
 
@@ -80,4 +81,16 @@ class SatelliteImage(QWidget):
           message="Gambar peta telah berhasil di download",
           icon=QMessageBox.Icon.Information
       )
+    
+    self.download_tile_thread = DownloadTiles(
+      tile_provider=self.tile_provider.get_value,
+      zoom_level=int(self.zoom_level.get_value),
+      polygon=self.polygon,
+      output_path=self.output_path.get_value
+    )
+    self.download_tile_thread.finished.connect(lambda: message.show())
+    self.download_tile_thread.finished.connect(self.download_tile_thread.deleteLater)
+    self.download_tile_thread.finished.connect(lambda: self.progress_bar.set_progress_range(max=100))
+    self.download_tile_thread.started.connect(lambda: self.progress_bar.set_progress_range())
+    self.download_tile_thread.start()
     
