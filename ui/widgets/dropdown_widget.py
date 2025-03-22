@@ -1,8 +1,10 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from typing import Optional, List
 
 class DropdownWidget(QWidget):
+  value_changed = pyqtSignal(str)
+
   def __init__(
       self, 
       label: str = "",
@@ -21,7 +23,15 @@ class DropdownWidget(QWidget):
 
     self.dropdown = QComboBox()
     self.dropdown.addItems(options)
+    self.dropdown.currentTextChanged.connect(self.value_changed)
     layout.addWidget(self.dropdown)
+  
+  def set_options(self, options: list):
+    if not len(options):
+      return
+    
+    self.dropdown.clear()
+    self.dropdown.addItems(options)
 
   @property
   def get_value(self):

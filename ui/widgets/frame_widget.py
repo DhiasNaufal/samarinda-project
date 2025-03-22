@@ -1,12 +1,12 @@
 from PyQt6.QtWidgets import QWidget, QFrame, QVBoxLayout, QLayout
 from typing import Optional
 
-class FrameWdiget(QWidget):
+class FrameWidget(QWidget):
   def __init__(self, parent: Optional[QWidget] = None) -> None:
     super().__init__(parent)
 
     self.frame = QFrame(self)
-    self.frame.setStyleSheet("QFrame#mainFrame { border: 1px solid lightgray; padding: 2px }")
+    self.frame.setStyleSheet("QFrame#mainFrame { border: 1px solid lightgray; }")
     self.frame.setObjectName("mainFrame")
     self.frame.setFrameShape(QFrame.Shape.Box)
 

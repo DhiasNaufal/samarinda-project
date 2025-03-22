@@ -9,7 +9,7 @@ from .widgets.dropdown_widget import DropdownWidget
 from .widgets.progress_bar_widget import ProgressBarWidget
 from .widgets.graphics_view_widget import GraphicsViewWidget
 from .widgets.list_widget import ListWidget
-from .widgets.frame_widget import FrameWdiget
+from .widgets.frame_widget import FrameWidget
 from .widgets.message_box_widget import CustomMessageBox, QMessageBox
 from .widgets.dynamic_widget import DynamicWidget
 
@@ -64,13 +64,13 @@ class Classification(QWidget):
         form_layout.add_widget(self.progress_bar)
 
         # classification result frame
-        result_frame = FrameWdiget()
+        result_frame = FrameWidget()
         form_layout.add_widget(result_frame)
 
         title = QLabel("<h3>Hasil Klasifikasi</h3>")
         result_frame.add_widget(title)
         
-        sawit_frame = FrameWdiget()
+        sawit_frame = FrameWidget()
         result_frame.add_widget(sawit_frame.frame)
         sawit_title = QLabel("Luas Kelapa Sawit yang Terdeteksi :")
         sawit_frame.add_widget(sawit_title)

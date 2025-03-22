@@ -3,7 +3,7 @@ from PyQt6.QtGui import QIcon
 from ui.cloudMasking_tab import CloudMasking
 from ui.superResolution_tab import SuperResolution
 from ui.classification_tab import Classification
-# from ui.satelit_image_tab import SatelitImage
+from ui.satellite_image_tab import SatelliteImage
 from ui.under_development import UnderDevelopment
 from PyQt6.QtCore import Qt
 
@@ -18,7 +18,7 @@ class MainWindow(QWidget):
         # Tab Widget
         self.tabs = QTabWidget()
         self.tabs.addTab(CloudMasking(self), "Sentinel 2 Cloud Mask")
-        self.tabs.addTab(UnderDevelopment(self), "Citra Satelit")
+        self.tabs.addTab(SatelliteImage(self), "Citra Satelit")
         self.tabs.addTab(SuperResolution(self), "Super Resolution")
         self.tabs.addTab(Classification(self), "Klasifikasi Kelapa Sawit")
         # Footer

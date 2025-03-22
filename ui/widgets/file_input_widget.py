@@ -19,6 +19,7 @@ class FileInputWidget(QWidget):
             filetype: FileType = FileType.ALL_FILES.value,
             file_input_type: FileInputType = FileInputType.FILEPATH.value,
             file_dialog_title: str = "Pilih File",
+            default_path: str = "",
             parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
@@ -33,7 +34,7 @@ class FileInputWidget(QWidget):
         self.filetype = filetype
         self.file_dialog_title = file_dialog_title
 
-        self.path = ""
+        self.path = default_path
 
         self.init_ui()
 

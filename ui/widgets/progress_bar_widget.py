@@ -14,8 +14,7 @@ class ProgressBarWidget(QWidget):
 
     self.progress_bar = QProgressBar(self)
     self.progress_bar.setMinimum(0)
-    self.progress_bar.setMaximum(0)
-    self.progress_bar.setFixedHeight(30)
+    self.progress_bar.setMaximum(100)
     
     # for indeterminate progress bar
     self.progress_bar.setTextVisible(False)
