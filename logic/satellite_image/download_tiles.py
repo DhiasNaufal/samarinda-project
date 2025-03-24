@@ -6,9 +6,10 @@ import numpy as np
 from io import BytesIO
 from PIL import Image
 from shapely.geometry import Polygon
-from rasterio.transform import from_origin
 from PyQt6.QtCore import QThread, QObject
 from typing import Optional
+from rasterio.transform import from_origin
+from pyproj import CRS, Transformer
 
 from .tile_providers import TILE_PROVIDERS
 from utils.common import get_file_extension
@@ -143,47 +144,61 @@ class DownloadTiles(QThread):
         cropped_image = image.crop((x_min, y_min, x_max, y_max))
 
         return cropped_image
-
+    
+    def get_utm_crs(self, lon, lat):
+        """Menentukan EPSG UTM berdasarkan koordinat longitude dan latitude."""
+        utm_zone = int((lon + 180) / 6) + 1
+        is_southern = lat < 0  # Cek apakah di belahan bumi selatan
+        epsg_code = 32700 + utm_zone if is_southern else 32600 + utm_zone
+        return epsg_code
+    
     def save_as_tiff(self, image, tile_range):
-        """Save the cropped image as a GeoTIFF with georeferencing."""
-        
-        # Get the pixel resolution (in degrees per pixel)
-        x_min, y_min, _, _ = tile_range
-        tile_size = 256  # Tile size in pixels
-        bbox = mercantile.bounds(x_min, y_min, self.zoom)
-        
-        # Calculate resolution (degrees per pixel)
-        res_x = (bbox.east - bbox.west) / tile_size
-        res_y = (bbox.north - bbox.south) / tile_size
+        """Menyimpan gambar yang telah di-crop sebagai GeoTIFF dengan CRS proyeksi."""
 
-        # Convert the polygon's bounding box to georeferenced coordinates
+        # Bounding box dari polygon dalam EPSG:4326 (WGS 84)
         lon_min, lat_min, lon_max, lat_max = self.polygon.bounds
+        
+        # Tentukan EPSG UTM berdasarkan lokasi (Samarinda: UTM 50S, EPSG:32750)
+        epsg_code = self.get_utm_crs((lon_min + lon_max) / 2, (lat_min + lat_max) / 2)
+        utm_crs = CRS.from_epsg(epsg_code)
+        print(f"Using EPSG:{epsg_code}")
 
-        # Define the transform (upper-left corner and resolution)
-        transform = from_origin(lon_min, lat_max, res_x, res_y)
+        # Transformasi dari WGS 84 ke UTM
+        transformer = Transformer.from_crs("EPSG:4326", utm_crs, always_xy=True)
+        x_min, y_min = transformer.transform(lon_min, lat_min)
+        x_max, y_max = transformer.transform(lon_max, lat_max)
 
-        # Convert the image to numpy array
+        # Hitung resolusi berdasarkan ukuran tile
+        tile_size = 256  # Ukuran satu tile dalam pixel
+        bbox = mercantile.bounds(tile_range[0], tile_range[1], self.zoom)
+        res_x = (x_max - x_min) / tile_size
+        res_y = (y_max - y_min) / tile_size
+
+        # Definisi transformasi untuk raster
+        transform = from_origin(x_min, y_max, res_x, res_y)
+
+        # Konversi gambar menjadi array numpy
         image_array = np.array(image)
 
-        # Ensure it's 3-band (RGB)
+        # Pastikan gambar memiliki 3 band (RGB)
         if len(image_array.shape) == 2:
-            image_array = np.expand_dims(image_array, axis=2)  # Convert grayscale to 3D
-        if image_array.shape[2] == 4:  # Remove alpha channel if present
+            image_array = np.expand_dims(image_array, axis=2)  # Ubah grayscale ke RGB
+        if image_array.shape[2] == 4:  # Jika ada alpha channel, hapus
             image_array = image_array[:, :, :3]
 
-        # Write to GeoTIFF
+        # Simpan sebagai GeoTIFF dengan CRS yang sesuai
         with rasterio.open(
             self.output_path,
             "w",
             driver="GTiff",
             height=image_array.shape[0],
             width=image_array.shape[1],
-            count=3,  # Number of bands (RGB)
+            count=3,  # RGB
             dtype=image_array.dtype,
-            crs="EPSG:4326",  # Set to WGS 84
+            crs=utm_crs.to_wkt(),  # CRS dalam format WKT
             transform=transform
         ) as dst:
-            for i in range(3):  # Save each RGB band separately
+            for i in range(3):  # Simpan masing-masing band RGB
                 dst.write(image_array[:, :, i], i + 1)
 
-        print(f"Saved: {self.output_path}")
+        print(f"Saved: {self.output_path} with EPSG:{epsg_code}")

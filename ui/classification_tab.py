@@ -211,6 +211,7 @@ class Classification(QWidget):
         self.classification_thread = ClassificationBgProcess(self.imageInput.get_value, self.temp_output_path, result_name)
 
         self.classification_thread.started.connect(lambda: self.progress_bar.setVisible(True))
+        self.classification_thread.started.connect(lambda: self.progress_bar.set_progress_range())
         self.classification_thread.progress.connect(lambda message : self.log_window.log_message(message))
         # self.classification_thread.result.connect(lambda: self.add_image_layer(self.temp_output_path))
         self.classification_thread.result.connect(self.process_result)
