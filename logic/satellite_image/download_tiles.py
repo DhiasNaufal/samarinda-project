@@ -14,6 +14,7 @@ from pyproj import CRS, Transformer
 from .tile_providers import TILE_PROVIDERS
 from utils.common import get_file_extension
 
+Image.MAX_IMAGE_PIXELS = None
 class DownloadTiles(QThread):
     def __init__(
             self, 
