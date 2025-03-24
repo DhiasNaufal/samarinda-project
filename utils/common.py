@@ -21,3 +21,17 @@ def get_file_extension(filepath: str = ""):
     splitted = filepath.lower().split(".")
     
     return splitted[len(splitted)-1]
+
+def calculate_time_diff(start_date, end_date):
+    # Calculate time difference in seconds
+    time_diff = (end_date - start_date).total_seconds()
+    
+    # Convert to hours, minutes, seconds
+    hours = int(time_diff // 3600)
+    minutes = int((time_diff % 3600) // 60)
+    seconds = int(time_diff % 60)
+    
+    # Format as HH:MM:SS
+    formatted_time = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    return formatted_time
+

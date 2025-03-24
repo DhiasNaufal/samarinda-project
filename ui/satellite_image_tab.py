@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt6.QtCore import Qt
 from typing import Optional
 from shapely import Polygon
+from datetime import datetime
 
 from .widgets.web_viewer_widget import WebViewWidget
 from .widgets.button_widget import ButtonWidget
@@ -14,7 +15,7 @@ from .widgets.progress_bar_widget import ProgressBarWidget
 from logic.satellite_image.download_tiles import DownloadTiles
 from logic.satellite_image.tile_providers import TILE_PROVIDERS
 
-from utils.common import get_string_date
+from utils.common import get_string_date, calculate_time_diff
 
 import os
 
@@ -24,6 +25,11 @@ class SatelliteImage(QWidget):
     self.polygon = None
 
     self.init_ui()
+    self.message_box = CustomMessageBox(
+          parent=self,
+          title="Info",
+          icon=QMessageBox.Icon.Information
+      )
 
   def init_ui(self):
     layout = QVBoxLayout(self)
@@ -77,28 +83,31 @@ class SatelliteImage(QWidget):
     geom = geojson["geometry"]
     self.polygon = Polygon(geom["coordinates"][0])
 
-  def download_image(self):
-    message_box = CustomMessageBox(
-          parent=self,
-          title="Info",
-          icon=QMessageBox.Icon.Information
-      )
-    
+  def on_download_finished(self):
+    self.progress_bar.set_progress_range(max=100)
+    self.download_tile_thread.deleteLater
+
+    end = datetime.now()
+    processing_time = calculate_time_diff(self.start, end)
+
+    self.message_box.set_informative_message(f"Selesai dalam waktu : {processing_time}")
+    self.message_box.show()
+
+  def download_image(self):    
     if self.polygon is None:
-      message_box.set_message("Pilih Area yang ingin di download terlebih dahulu")
-      message_box.show()
+      self.message_box.set_message("Pilih Area yang ingin di download terlebih dahulu")
+      self.message_box.show()
       return
 
-    message_box.set_message("Gambar peta telah berhasil di download")
+    self.message_box.set_message("Gambar peta telah berhasil di download")
     self.download_tile_thread = DownloadTiles(
       tile_provider=self.tile_provider.get_value,
       zoom_level=int(self.zoom_level.get_value),
       polygon=self.polygon,
       output_path=self.output_path.get_value
     )
-    self.download_tile_thread.finished.connect(lambda: message_box.show())
-    self.download_tile_thread.finished.connect(self.download_tile_thread.deleteLater)
-    self.download_tile_thread.finished.connect(lambda: self.progress_bar.set_progress_range(max=100))
+    self.download_tile_thread.finished.connect(self.on_download_finished)
     self.download_tile_thread.started.connect(lambda: self.progress_bar.set_progress_range())
+    self.download_tile_thread.started.connect(lambda: setattr(self, "start", datetime.now()))
     self.download_tile_thread.start()
     

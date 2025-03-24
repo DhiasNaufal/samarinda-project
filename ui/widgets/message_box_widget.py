@@ -20,6 +20,9 @@ class CustomMessageBox():
   def set_message(self, message: str):
     self.message = message
 
+  def set_informative_message(self, message: str):
+    self.informative_message = message
+
   def show(self): 
     message_box = QMessageBox(self.parent)
     
