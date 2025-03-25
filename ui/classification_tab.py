@@ -99,7 +99,7 @@ class Classification(QWidget):
 
         download_shp = FileInputWidget(
             button_name="Download SHP", 
-            filetype=FileType.SHP.value,
+            filetype=[FileType.SHP.value],
             file_input_type=FileInputType.FILENAME.value)
         download_shp.path_selected.connect(lambda path: save_vector(self.result["gdf"], path))
         result_frame.add_widget(download_shp)
