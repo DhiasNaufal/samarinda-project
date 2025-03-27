@@ -8,7 +8,7 @@ from PIL import Image
 from shapely.geometry import Polygon
 from PyQt6.QtCore import QThread, QObject
 from typing import Optional
-from rasterio.transform import from_origin
+from rasterio.transform import from_origin, Affine
 from pyproj import CRS, Transformer
 
 from .tile_providers import TILE_PROVIDERS
@@ -102,8 +102,9 @@ class DownloadTiles(QThread):
 
         # Merge tiles into a single image
         tile_width, tile_height = tiles[0][0].size  # 256x256 by default
-        merged_width = (x_max - x_min + 1) * tile_width
-        merged_height = (y_max - y_min + 1) * tile_height
+        self.tile_size = tile_width
+        merged_width = (x_max - x_min + 1) * self.tile_size
+        merged_height = (y_max - y_min + 1) * self.tile_size
 
         merged_image = Image.new("RGB", (merged_width, merged_height))
         for row_idx, row in enumerate(tiles):
@@ -115,19 +116,18 @@ class DownloadTiles(QThread):
     def lonlat_to_pixel(self, lon, lat, tile_range):
         """Convert lat/lon to pixel coordinates in the merged image."""
         x_min, y_min, _, _ = tile_range
-        tile_size = 256
 
         tile = mercantile.tile(lon, lat, self.zoom)
         xtile, ytile = tile.x, tile.y
         bbox = mercantile.bounds(xtile, ytile, self.zoom)
 
         # Convert lon/lat to pixel coordinates within the tile
-        px = int(((lon - bbox.west) / (bbox.east - bbox.west)) * tile_size)
-        py = int(((bbox.north - lat) / (bbox.north - bbox.south)) * tile_size)
+        px = int(((lon - bbox.west) / (bbox.east - bbox.west)) * self.tile_size)
+        py = int(((bbox.north - lat) / (bbox.north - bbox.south)) * self.tile_size)
 
         # Convert to pixel coordinates in the merged image
-        px += (xtile - x_min) * tile_size
-        py += (ytile - y_min) * tile_size
+        px += (xtile - x_min) * self.tile_size
+        py += (ytile - y_min) * self.tile_size
 
         return px, py
 
@@ -166,17 +166,17 @@ class DownloadTiles(QThread):
 
         # Transformasi dari WGS 84 ke UTM
         transformer = Transformer.from_crs("EPSG:4326", utm_crs, always_xy=True)
-        x_min, y_min = transformer.transform(lon_min, lat_min)
-        x_max, y_max = transformer.transform(lon_max, lat_max)
+        x_min, y_min = transformer.transform(lon_min, lat_min) # Bottom-left
+        x_max, y_max = transformer.transform(lon_max, lat_max) # Top-right
 
         # Hitung resolusi berdasarkan ukuran tile
-        tile_size = 256  # Ukuran satu tile dalam pixel
-        bbox = mercantile.bounds(tile_range[0], tile_range[1], self.zoom)
-        res_x = (x_max - x_min) / tile_size
-        res_y = (y_max - y_min) / tile_size
-
-        # Definisi transformasi untuk raster
-        transform = from_origin(x_min, y_max, res_x, res_y)
+        width, height = image.size
+        res_x = (x_max - x_min) / width # pixel resolution
+        res_y = (y_max - y_min) / height # pixel resolution
+        transform = Affine(
+            res_x, 0, x_min,  # Scale X, Shear X, Origin X (Top-left X)
+            0, -res_y, y_max  # Shear Y, Scale Y (Negative), Origin Y (Top-left Y)
+        )
 
         # Konversi gambar menjadi array numpy
         image_array = np.array(image)
