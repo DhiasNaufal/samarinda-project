@@ -86,7 +86,7 @@ class SatelliteImage(QWidget):
 
   def on_download_finished(self):
     self.progress_bar.set_progress_range(max=100)
-    self.download_tile_thread.deleteLater
+    self.download_tile_thread.deleteLater()
 
     end = datetime.now()
     processing_time = calculate_time_diff(self.start, end)
@@ -96,12 +96,20 @@ class SatelliteImage(QWidget):
     self.message_box.show()
 
   def handle_error(self, message):
+    # show error message
     self.message_box.set_icon(QMessageBox.Icon.Critical)
     self.message_box.set_title("Error")
     self.message_box.set_message(message)
     self.message_box.show()
+
+    # reset message box title and icon
     self.message_box.set_title("Info")
     self.message_box.set_icon(QMessageBox.Icon.Information)
+    
+    # stop progress bar
+    self.progress_bar.set_progress_range(max=100)
+    # remove thread object
+    self.download_tile_thread.deleteLater()
 
   def download_image(self):    
     if self.polygon is None:
