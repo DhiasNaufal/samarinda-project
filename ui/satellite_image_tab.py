@@ -95,6 +95,14 @@ class SatelliteImage(QWidget):
     self.message_box.set_informative_message(f"Selesai dalam waktu : {processing_time}\nTersimpan di : {self.output_path.get_value}.")
     self.message_box.show()
 
+  def handle_error(self, message):
+    self.message_box.set_icon(QMessageBox.Icon.Critical)
+    self.message_box.set_title("Error")
+    self.message_box.set_message(message)
+    self.message_box.show()
+    self.message_box.set_title("Info")
+    self.message_box.set_icon(QMessageBox.Icon.Information)
+
   def download_image(self):    
     if self.polygon is None:
       self.message_box.set_message("Pilih Area yang ingin di download terlebih dahulu")
@@ -112,8 +120,9 @@ class SatelliteImage(QWidget):
       polygon=self.polygon,
       output_path=self.output_path.get_value
     )
-    self.download_tile_thread.finished.connect(self.on_download_finished)
     self.download_tile_thread.started.connect(lambda: self.progress_bar.set_progress_range())
     self.download_tile_thread.started.connect(lambda: setattr(self, "start", datetime.now()))
+    self.download_tile_thread.error_signal.connect(self.handle_error)
+    self.download_tile_thread.finish_signal.connect(self.on_download_finished)
     self.download_tile_thread.start()
     

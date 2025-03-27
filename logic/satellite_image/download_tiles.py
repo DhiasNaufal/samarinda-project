@@ -6,7 +6,7 @@ import numpy as np
 from io import BytesIO
 from PIL import Image
 from shapely.geometry import Polygon
-from PyQt6.QtCore import QThread, QObject
+from PyQt6.QtCore import QThread, QObject, pyqtSignal
 from typing import Optional
 from rasterio.transform import from_origin, Affine
 from pyproj import CRS, Transformer
@@ -16,6 +16,9 @@ from utils.common import get_file_extension
 
 Image.MAX_IMAGE_PIXELS = None
 class DownloadTiles(QThread):
+    error_signal = pyqtSignal(str)
+    finish_signal = pyqtSignal()
+
     def __init__(
             self, 
             tile_provider: str,
@@ -33,13 +36,18 @@ class DownloadTiles(QThread):
         self.tile_url = next((tile_provider["url"] for tile_provider in TILE_PROVIDERS if tile_provider["name"] == self.tile_provider), None)
 
     def run(self):
-        merged_image, tile_range = self.download_tiles()   
-        cropped_image = self.crop_image(merged_image, tile_range)
+        try:
+            merged_image, tile_range = self.download_tiles()   
+            cropped_image = self.crop_image(merged_image, tile_range)
 
-        if get_file_extension(self.output_path) == "tif":
-            self.save_as_tiff(cropped_image)
-        else:
-            cropped_image.save(self.output_path)     
+            if get_file_extension(self.output_path) == "tif":
+                self.save_as_tiff(cropped_image)
+            else:
+                cropped_image.save(self.output_path) 
+            
+            self.finish_signal.emit()   
+        except Exception as e:
+            self.error_signal.emit(str(e))
 
     def tile_to_quadkey(self, x, y):
         """Convert tile coordinates to a Bing Maps quadkey."""

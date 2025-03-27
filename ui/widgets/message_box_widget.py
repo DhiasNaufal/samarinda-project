@@ -23,6 +23,12 @@ class CustomMessageBox():
   def set_informative_message(self, message: str):
     self.informative_message = message
 
+  def set_icon(self, icon: QMessageBox.Icon.Information):
+    self.icon = icon
+
+  def set_title(self, title: str):
+    self.title = title
+
   def show(self): 
     message_box = QMessageBox(self.parent)
     
