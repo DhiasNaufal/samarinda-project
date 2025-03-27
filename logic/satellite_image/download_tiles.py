@@ -37,7 +37,7 @@ class DownloadTiles(QThread):
         cropped_image = self.crop_image(merged_image, tile_range)
 
         if get_file_extension(self.output_path) == "tif":
-            self.save_as_tiff(cropped_image, tile_range)
+            self.save_as_tiff(cropped_image)
         else:
             cropped_image.save(self.output_path)     
 
@@ -153,7 +153,7 @@ class DownloadTiles(QThread):
         epsg_code = 32700 + utm_zone if is_southern else 32600 + utm_zone
         return epsg_code
     
-    def save_as_tiff(self, image, tile_range):
+    def save_as_tiff(self, image):
         """Menyimpan gambar yang telah di-crop sebagai GeoTIFF dengan CRS proyeksi."""
 
         # Bounding box dari polygon dalam EPSG:4326 (WGS 84)

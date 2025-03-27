@@ -84,6 +84,11 @@ class FileInputWidget(QWidget):
     def set_label(self, label: str):
         self.label.setText(label)
 
+    def set_path(self, path: str):
+        self.path = path
+        label = self.label.text().split(":")
+        self.label.setText(f"{label[0]} : {path}")
+
     @property
     def get_value(self) -> str:
         return self.path

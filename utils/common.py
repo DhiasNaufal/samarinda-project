@@ -1,5 +1,6 @@
 import datetime
 from pathlib import Path
+import re
 
 def get_current_time() -> str:
     current_time = datetime.datetime.now()
@@ -35,3 +36,6 @@ def calculate_time_diff(start_date, end_date):
     formatted_time = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
     return formatted_time
 
+def is_default_filename(filename, prefix):
+    pattern = fr".*[/\\]{re.escape(prefix)} \d{{4}}(?:0[1-9]|1[0-2])(?:0[1-9]|[12][0-9]|3[01])(?:[01][0-9]|2[0-3])(?:[0-5][0-9])(?:[0-5][0-9])\.tif$"
+    return bool(re.match(pattern, filename))

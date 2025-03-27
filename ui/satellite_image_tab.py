@@ -3,6 +3,7 @@ from PyQt6.QtCore import Qt
 from typing import Optional
 from shapely import Polygon
 from datetime import datetime
+import geopandas as gpd
 
 from .widgets.web_viewer_widget import WebViewWidget
 from .widgets.button_widget import ButtonWidget
@@ -15,7 +16,7 @@ from .widgets.progress_bar_widget import ProgressBarWidget
 from logic.satellite_image.download_tiles import DownloadTiles
 from logic.satellite_image.tile_providers import TILE_PROVIDERS
 
-from utils.common import get_string_date, calculate_time_diff
+from utils.common import get_string_date, calculate_time_diff, is_default_filename
 
 import os
 
@@ -63,7 +64,7 @@ class SatelliteImage(QWidget):
       label="Tentukan output file",
       filetype=[FileType.TIFF.value, FileType.PNG.value, FileType.JPG.value],
       file_input_type=FileInputType.FILENAME.value,
-      default_path=os.path.join(os.getcwd(), "output", f"result {get_string_date()}.tif")
+      default_path="(dibuat otomatis oleh sistem)"
     )
     self.output_path.path_selected.connect(lambda path: self.output_path.set_label(f"Tentukan output file : {path}"))
     frame.add_widget(self.output_path)
@@ -90,7 +91,8 @@ class SatelliteImage(QWidget):
     end = datetime.now()
     processing_time = calculate_time_diff(self.start, end)
 
-    self.message_box.set_informative_message(f"Selesai dalam waktu : {processing_time}")
+    self.message_box.set_message("Gambar peta telah berhasil di download")
+    self.message_box.set_informative_message(f"Selesai dalam waktu : {processing_time}\nTersimpan di : {self.output_path.get_value}.")
     self.message_box.show()
 
   def download_image(self):    
@@ -99,7 +101,11 @@ class SatelliteImage(QWidget):
       self.message_box.show()
       return
 
-    self.message_box.set_message("Gambar peta telah berhasil di download")
+    if not self.output_path.get_value or \
+        self.output_path.get_value == "(dibuat otomatis oleh sistem)" or \
+        is_default_filename(self.output_path.get_value, "result"):
+      self.output_path.set_path(os.path.join(os.getcwd(), "output", f"result {get_string_date()}.tif"))
+
     self.download_tile_thread = DownloadTiles(
       tile_provider=self.tile_provider.get_value,
       zoom_level=int(self.zoom_level.get_value),
