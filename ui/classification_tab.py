@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame, QPushButton, QLineEdit, QFileDialog, QHBoxLayout, QDateEdit, QTextEdit, QSlider, QComboBox,QProgressBar,QSizePolicy
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
 from PyQt6.QtCore import Qt
 from typing import Optional
 
@@ -17,9 +17,8 @@ from utils.enum import LogLevel, FileType, FileInputType
 from utils.common import get_filename, get_string_date, get_file_extension
 
 from logic.classification.classificationBg import ClassificationBgProcess
-from logic.classification.process_result import ProcessResult, save_vector, save_geotiff
+from logic.classification.save_worker import SaveWorker
 
-import json
 import os
 # from predict import main
 
@@ -101,19 +100,28 @@ class Classification(QWidget):
             button_name="Download SHP", 
             filetype=[FileType.SHP.value],
             file_input_type=FileInputType.FILENAME.value)
-        download_shp.path_selected.connect(lambda path: save_vector(self.result["gdf"], path))
+        download_shp.path_selected.connect(
+            lambda path: self._start_worker(worker_type="download", mode="vector", output_path=path, gdf=self.result["gdf"]))
+        
         result_frame.add_widget(download_shp)
         download_tif = FileInputWidget(
             button_name="Download TIFF", 
             filetype=[FileType.TIFF.value],
             file_input_type=FileInputType.FILENAME.value)
-        download_tif.path_selected.connect(lambda path: save_geotiff(self.result["meta"], self.result["class_array"], path))
+        download_tif.path_selected.connect(
+            lambda path: self._start_worker(
+                worker_type="download", 
+                mode="raster", 
+                output_path=path, 
+                meta=self.result["meta"], 
+                class_array=self.result["class_array"]))
         result_frame.add_widget(download_tif)
         download_geojson = FileInputWidget(
             button_name="Download GeoJSON", 
             filetype=[FileType.GEOJSON.value],
             file_input_type=FileInputType.FILENAME.value)
-        download_geojson.path_selected.connect(lambda path: save_vector(self.result["gdf"], path))
+        download_geojson.path_selected.connect(
+            lambda path: self._start_worker(worker_type="download", mode="vector", output_path=path, gdf=self.result["gdf"]))
         result_frame.add_widget(download_geojson)
         
         # raster or vector layers
@@ -203,19 +211,34 @@ class Classification(QWidget):
             name = get_filename(self.temp_output_path, ext=False)
             self.remove_image_layer(name)
 
-        #start
+        # set output path
+        output_path = os.path.join(os.getcwd(), "data")
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+
         result_name = f"Hasil - {get_filename(self.imageInput.get_value, ext=False)}-{get_string_date()}.png"
-        self.temp_output_path = os.path.join(os.getcwd(), "data", result_name)
+        self.temp_output_path = os.path.join(output_path, result_name)
 
         self.log_window.log_message('Memulai Klasifikasi')
-        self.classification_thread = ClassificationBgProcess(self.imageInput.get_value, self.temp_output_path, result_name)
 
-        self.classification_thread.started.connect(lambda: self.progress_bar.setVisible(True))
-        self.classification_thread.started.connect(lambda: self.progress_bar.set_progress_range())
-        self.classification_thread.progress.connect(lambda message : self.log_window.log_message(message))
-        # self.classification_thread.result.connect(lambda: self.add_image_layer(self.temp_output_path))
-        self.classification_thread.result.connect(self.process_result)
-        self.classification_thread.finished.connect(self.classification_thread.deleteLater)
-        self.classification_thread.finished.connect(lambda: self.progress_bar.setVisible(False))
-        self.classification_thread.start()
+        # start classification process
+        self._start_worker(worker_type="classification", image_path = self.imageInput.get_value, output_path = self.temp_output_path, result_name = result_name)
+ 
+    def _start_worker(self, worker_type="", **kwargs):
+        self.qthread = ClassificationBgProcess(**kwargs) if worker_type == "classification" else SaveWorker(**kwargs)
+        
+        self.qthread.started.connect(lambda: self.progress_bar.setVisible(True))
+        self.qthread.started.connect(lambda: self.progress_bar.set_progress_range())
 
+        if worker_type == "classification":
+            self.qthread.progress.connect(lambda message : self.log_window.log_message(message))
+            self.qthread.result.connect(self.process_result)
+        elif worker_type == "download":
+            self.qthread.error.connect(self.handle_save_error)
+        
+        self.qthread.finished.connect(self.qthread.deleteLater)
+        self.qthread.finished.connect(lambda: self.progress_bar.setVisible(False))
+        self.qthread.start()
+
+    def handle_save_error(self, error_msg):
+        self.log_window.log_message(f"Error : {error_msg}", level=LogLevel.ERROR)
