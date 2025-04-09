@@ -120,7 +120,12 @@ class SatelliteImage(QWidget):
     if not self.output_path.get_value or \
         self.output_path.get_value == "(dibuat otomatis oleh sistem)" or \
         is_default_filename(self.output_path.get_value, "result"):
-      self.output_path.set_path(os.path.join(os.getcwd(), "output", f"result {get_string_date()}.tif"))
+      output_path = os.path.join(os.getcwd(), "output")
+      if not os.path.exists(output_path):
+        os.makedirs(output_path)
+      
+      filename = f"result {get_string_date()}.tif"
+      self.output_path.set_path(os.path.join(output_path, filename))
 
     self.download_tile_thread = DownloadTiles(
       tile_provider=self.tile_provider.get_value,
