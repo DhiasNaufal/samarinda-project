@@ -7,3 +7,5 @@ sentinel_map.html
 data/
 test*.*
 output/
+build/
+dist/
