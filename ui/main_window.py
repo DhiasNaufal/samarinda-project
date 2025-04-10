@@ -6,14 +6,16 @@ from ui.classification_tab import Classification
 from ui.satellite_image_tab import SatelliteImage
 from ui.under_development import UnderDevelopment
 from PyQt6.QtCore import Qt
+from utils.common import resource_path
+import os
 
 class MainWindow(QWidget):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("Palm Tree Classification")
-        self.setWindowIcon(QIcon("assets/img/ugm.png"))
+        self.setWindowIcon(QIcon(resource_path(os.path.join("assets", "img", "ugm.png"))))
         self.setGeometry(200, 100, 1200, 900)
-        self.load_stylesheet("assets/css/main.qss")
+        self.load_stylesheet(resource_path(os.path.join("assets", "css", "main.qss")))
         
         # Tab Widget
         self.tabs = QTabWidget()
@@ -38,7 +40,9 @@ class MainWindow(QWidget):
 
     def load_stylesheet(self, filename) -> None:
         try:
-            with open(filename, "r") as file:
+            with open(filename, "r", encoding="utf-8") as file:
                 self.setStyleSheet(file.read())
         except FileNotFoundError:
             print(f"Warning: File {filename} tidak ditemukan.")
+        except PermissionError:
+            print(f"Error: Akses dibatasi untuk file : {filename}")

@@ -10,14 +10,13 @@ for package in pkgutil.iter_modules(rasterio.__path__, prefix="rasterio."):
 
 pyogrio_datas, pyogrio_binaries, pyogrio_hiddenimports = collect_all("pyogrio")
 
-block_cipher = None
 
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=pyogrio_binaries,
-    datas=pyogrio_datas,
-    hiddenimports=additional_packages+pyogrio_hiddenimports,
+    datas=[('assets', 'assets'), ("best_model_fix.h5", ".")] + pyogrio_datas,
+    hiddenimports=additional_packages + pyogrio_hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -33,8 +32,9 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
+    icon="assets/img/icon.ico",
     name='main',
-    debug=True,
+    debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,

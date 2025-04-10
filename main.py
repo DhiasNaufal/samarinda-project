@@ -3,6 +3,8 @@ from PyQt6.QtWidgets import QApplication, QSplashScreen
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt, QTimer
 from ui.main_window import MainWindow
+from utils.common import resource_path
+import os
 
 def show_main_window():
     window.show()
@@ -12,7 +14,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     
     # Splash Screen
-    splash_pixmap = QPixmap("assets/img/ugm.png")
+    splash_pixmap = QPixmap(resource_path(os.path.join("assets", "img", "ugm.png")))
     splash = QSplashScreen(splash_pixmap, Qt.WindowType.WindowStaysOnTopHint)
     splash.setMask(splash_pixmap.mask())
     splash.setWindowOpacity(0.9)

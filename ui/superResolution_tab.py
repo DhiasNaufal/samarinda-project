@@ -14,6 +14,8 @@ from .widgets.web_viewer_widget import WebViewWidget
 from .widgets.message_box_widget import CustomMessageBox, QMessageBox
 
 from utils.enum import FileType
+from utils.common import resource_path
+
 class SuperResolution(QWidget):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
@@ -47,7 +49,7 @@ class SuperResolution(QWidget):
         form_layout.addWidget(self.super_res_btn)
 
         # Web Map View
-        self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "assets", "super_resolution_map.html"))
+        self.web_view = WebViewWidget(map_path=resource_path(os.path.join("assets", "super_resolution_map.html")))
         # self.web_view = WebViewWidget(map_url="http://localhost:8000/assets/super_resolution_map.html")
         self.web_view.geojson_generated.connect(self.on_received_geojson)
 
@@ -129,7 +131,7 @@ class SuperResolution(QWidget):
         
     def load_map_html(self) -> None:
         """Load map.html content from file."""
-        html_file_path = os.path.join(os.getcwd(), "assets", "map2.html")
+        html_file_path = resource_path(os.path.join("assets", "map2.html"))
         with open(html_file_path, "r", encoding="utf-8") as file:
             html_content = file.read()
         return 

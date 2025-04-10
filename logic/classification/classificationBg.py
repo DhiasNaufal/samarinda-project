@@ -10,6 +10,7 @@ import rasterio
 import os
 
 from .process_result import ProcessResult
+from utils.common import resource_path
 
 class ClassificationBgProcess(QThread):
     progress = pyqtSignal(str)
@@ -152,7 +153,7 @@ class ClassificationBgProcess(QThread):
 
     def run(self):
         self.progress.emit("Memuat model...")
-        model = load_model(os.path.join(os.getcwd(), "best_model_fix.h5"), compile=False)
+        model = load_model(resource_path("best_model_fix.h5"), compile=False)
 
         self.progress.emit("Melakukan prediksi...")
         mask = self.predict_patched_image(model, self.image_path)

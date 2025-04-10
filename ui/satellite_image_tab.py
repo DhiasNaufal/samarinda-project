@@ -16,7 +16,7 @@ from .widgets.progress_bar_widget import ProgressBarWidget
 from logic.satellite_image.download_tiles import DownloadTiles
 from logic.satellite_image.tile_providers import TILE_PROVIDERS
 
-from utils.common import get_string_date, calculate_time_diff, is_default_filename
+from utils.common import get_string_date, calculate_time_diff, is_default_filename, resource_path
 
 import os
 
@@ -36,7 +36,7 @@ class SatelliteImage(QWidget):
     layout = QVBoxLayout(self)
     layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-    self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "assets", "satellite_image_map.html"))
+    self.web_view = WebViewWidget(map_path=resource_path(os.path.join("assets", "satellite_image_map.html")))
     self.web_view.geojson_generated.connect(self.on_received_geojson)
     layout.addWidget(self.web_view)
 

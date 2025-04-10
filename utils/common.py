@@ -1,6 +1,8 @@
 import datetime
 from pathlib import Path
 import re
+import os
+import sys
 
 def get_current_time() -> str:
     current_time = datetime.datetime.now()
@@ -39,3 +41,9 @@ def calculate_time_diff(start_date, end_date):
 def is_default_filename(filename, prefix):
     pattern = fr".*[/\\]{re.escape(prefix)} \d{{4}}(?:0[1-9]|1[0-2])(?:0[1-9]|[12][0-9]|3[01])(?:[01][0-9]|2[0-3])(?:[0-5][0-9])(?:[0-5][0-9])\.tif$"
     return bool(re.match(pattern, filename))
+
+def resource_path(relative_path):
+    """ Get absolute path to resource (works for dev and PyInstaller) """
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)

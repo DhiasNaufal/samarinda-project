@@ -22,6 +22,7 @@ from .widgets.dynamic_widget import DynamicWidget
 from .widgets.message_box_widget import CustomMessageBox, QMessageBox
 
 from utils.enum import LogLevel, FileType
+from utils.common import resource_path
 
 from logic.map import Map
 
@@ -97,7 +98,7 @@ class CloudMasking(QWidget):
         form_widget.add_widget(self.export_btn)
 
         # Web Map View
-        self.web_view = WebViewWidget(map_path=os.path.join(os.getcwd(), "assets", "cloud_mask_map.html"))
+        self.web_view = WebViewWidget(map_path=resource_path(os.path.join("assets", "cloud_mask_map.html")))
         # self.web_view = WebViewWidget(map_url="http://localhost:8000/assets/cloud_mask_map.html")
         self.web_view.setMinimumWidth(500)
         self.web_view.geojson_generated.connect(self.on_received_geojson)
