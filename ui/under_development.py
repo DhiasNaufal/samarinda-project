@@ -2,7 +2,9 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
 from typing import Optional
+from utils.common import resource_path
 
+import os
 class UnderDevelopment(QWidget):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
@@ -15,7 +17,7 @@ class UnderDevelopment(QWidget):
         image_layout = QHBoxLayout()
 
         # Load Image
-        pixmap = QPixmap("assets/img/under_dev.png") 
+        pixmap = QPixmap(resource_path(os.path.join("assets", "img", "under_dev.png"))) 
         image_label = QLabel(self)
 
         if pixmap.isNull():

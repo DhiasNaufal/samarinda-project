@@ -148,6 +148,13 @@ class Classification(QWidget):
         # self.log_window.setFixedHeight(200)
         main_layout.addWidget(self.log_window)
 
+    def default_area(self):
+        self.ground.setText("Lahan\t\t - m2")   
+        self.hutan.setText("Hutan\t\t - m2")
+        self.urban.setText("Urban\t\t - m2")
+        self.vegetation.setText("Vegetasi\t - m2")
+        self.palmoil.setText("<h1>- m2</h1>")
+
     def add_image_layer(self, filepath):
         layer_name = get_filename(filepath, ext=False)
         self.layer.add_item(layer_name)
@@ -168,6 +175,9 @@ class Classification(QWidget):
         self.imageInput.set_label(f"Dokumen Gambar : {filepath}")
         self.add_image_layer(filepath)
         self.log_window.log_message("TIF berhasil dimuat!")
+
+        # set all area to -
+        self.default_area()
 
     def process_result(self, result):
         self.add_image_layer(self.temp_output_path)
@@ -210,6 +220,9 @@ class Classification(QWidget):
         if self.temp_output_path is not None:
             name = get_filename(self.temp_output_path, ext=False)
             self.remove_image_layer(name)
+
+        # set all area to -
+        self.default_area()
 
         # set output path
         output_path = os.path.join(os.getcwd(), "data")
