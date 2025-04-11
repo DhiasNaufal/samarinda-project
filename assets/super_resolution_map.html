@@ -1,125 +1,65 @@
 <!DOCTYPE html>
-<html lang="id">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Leaflet Side-by-Side Map</title>
+<html>
+<head>
+  <title>Leaflet Map</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    #map { height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    const map = L.map('map').setView([0, 0], 5);
 
-    <!-- Leaflet Side-by-Side -->
-    <script src="https://cdn.jsdelivr.net/gh/digidem/leaflet-side-by-side/leaflet-side-by-side.js"></script>
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data © OpenStreetMap contributors'
+    }).addTo(map);
 
-    <!-- GeoRaster Dependencies -->
-    <script src="https://unpkg.com/georaster"></script>
-    <script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
+    let marker = L.marker([0, 0], {draggable: true}).addTo(map);
+    let rectangle;
+    window.pyqtChannel = null;
 
-    <!-- PyQt Web Channel -->
-    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    function createRectangle(center, size_km = 4) {
+      const delta = 0.009 * size_km / 2;
+      const bounds = [
+        [center.lat - delta, center.lng - delta],
+        [center.lat + delta, center.lng + delta]
+      ];
+      return L.rectangle(bounds, {color: "red", weight: 2, fillOpacity: 0.3});
+    }
 
-    <style>
-      #mapContainer {
-        width: 100%;
-        height: 500px;
-        position: relative;
+    function updatePosition(position) {
+      if (rectangle) rectangle.remove();
+      rectangle = createRectangle(position).addTo(map);
+
+      const coords = `${position.lng}, ${position.lat}`;
+      console.log("Selected Coordinates:", coords);
+
+      if (window.pyqtChannel) {
+        window.pyqtChannel.receivedString(coords);
       }
-      #map {
-        width: 100%;
-        height: 100%;
-      }
-      /* Pastikan slider tidak tersembunyi */
-      .leaflet-sbs-range {
-        pointer-events: auto !important;
-        z-index: 1000 !important;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="mapContainer">
-      <div id="map"></div>
-    </div>
+    }
 
-    <script>
-      var map = L.map("map").setView([-0.4827, 117.1821], 12);
+    marker.on('dragend', function(e) {
+      updatePosition(marker.getlatLng());
+    });
+    
+    new QWebChannel(qt.webChannelTransport, function (channel) {
+      window.pyqtChannel = channel.objects.pyqtChannel; // Pastikan channel terhubung
 
-      // Base Layers (Before & After)
-      var beforeLayer = L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-          attribution: "© OpenStreetMap contributors",
-        }
-      );
-
-      var afterLayer = L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-          attribution: "© OpenStreetMap contributors",
-        }
-      );
-
-      beforeLayer.addTo(map);
-      afterLayer.addTo(map);
-
-      // Buat slider setelah kedua layer ditambahkan
-      var sliderControl = L.control
-        .sideBySide(beforeLayer, afterLayer)
-        .addTo(map);
-
-      // PyQt Integration
-      new QWebChannel(qt.webChannelTransport, function (channel) {
-        window.pyqtChannel = channel.objects.pyqtChannel;
-      });
-
-      function updateBeforeLayer(tiffUrl) {
-        fetch(tiffUrl)
-          .then((response) => response.arrayBuffer())
-          .then((arrayBuffer) => parseGeoraster(arrayBuffer))
-          .then((georaster) => {
-            let newLayer = new GeoRasterLayer({
-              georaster: georaster,
-              opacity: 1.0,
-            });
-
-            if (beforeLayer) {
-              map.removeLayer(beforeLayer);
-            }
-
-            beforeLayer = newLayer.addTo(map);
-            map.fitBounds(beforeLayer.getBounds());
-
-            // UPDATE slider dengan layer baru
-            sliderControl.setLeftLayers(beforeLayer);
-          })
-          .catch((error) => console.error("Error loading GeoTIFF:", error));
-      }
-
-      function updateAfterLayer(imageUrl) {
-        if (afterLayer) {
-          map.removeLayer(afterLayer);
-        }
-
-        afterLayer = L.tileLayer(imageUrl, {
-          attribution: "© Custom Layer",
-        }).addTo(map);
-
-        // UPDATE slider dengan layer baru
-        sliderControl.setRightLayers(afterLayer);
-      }
-      document
-        .querySelector(".leaflet-sbs-range")
-        .addEventListener("mousedown", function (event) {
-          event.stopPropagation(); // Mencegah peta ikut bergerak
-        });
-
-      document
-        .querySelector(".leaflet-sbs-range")
-        .addEventListener("touchstart", function (event) {
-          event.stopPropagation(); // Mencegah peta ikut bergerak di perangkat sentuh
-        });
-    </script>
-  </body>
+      // Wait a bit to ensure map and marker are fully rendered
+      setTimeout(() => {
+        const initialPos = marker.getLatLng();
+        updatePosition(initialPos);
+      }, 500); // 500ms delay should be safe inside QWebEngine
+    });
+  </script>
+</body>
 </html>

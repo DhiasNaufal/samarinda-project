@@ -7,6 +7,7 @@ import json
 from typing import Optional
 class WebViewWidget(QWidget):
   geojson_generated = pyqtSignal(dict)
+  string_received = pyqtSignal(str)
 
   def __init__(self, map_url: str = "", map_path: str = "", parent: Optional[QWidget] = None) -> None:
     super().__init__(parent)
@@ -45,6 +46,11 @@ class WebViewWidget(QWidget):
     """Receive GeoJSON data from JavaScript and convert it to EE Geometry."""
     self.data = json.loads(data)
     self.geojson_generated.emit(self.data)
+
+  @pyqtSlot(str)
+  def receivedString(self, data: str) -> None:
+    """Receive string data from JavaScript."""
+    self.string_received.emit(data)
 
   def add_raster(self, filename: str, path: str = "output"):
     """Send a command to JavaScript to load a new raster file."""
