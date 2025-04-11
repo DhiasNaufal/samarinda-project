@@ -148,6 +148,24 @@ class Classification(QWidget):
         # self.log_window.setFixedHeight(200)
         main_layout.addWidget(self.log_window)
 
+    def disable_except(self, exceptions: list[QWidget] = []) -> None:
+        def is_in_exception_tree(widget: QWidget) -> bool:
+            for ex in exceptions:
+                current = widget
+                while current is not None:
+                    if current is ex:
+                        return True
+                    current = current.parentWidget()
+            return False
+
+        for child in self.findChildren(QWidget):
+            if not is_in_exception_tree(child):
+                child.setDisabled(True)
+
+    def enable_all(self) -> None:
+        for child in self.findChildren(QWidget):
+            child.setEnabled(True)
+
     def default_area(self):
         self.ground.setText("Lahan\t\t - m2")   
         self.hutan.setText("Hutan\t\t - m2")
@@ -242,6 +260,7 @@ class Classification(QWidget):
         
         self.qthread.started.connect(lambda: self.progress_bar.setVisible(True))
         self.qthread.started.connect(lambda: self.progress_bar.set_progress_range())
+        self.qthread.started.connect(lambda: self.disable_except([self.log_window]))
 
         if worker_type == "classification":
             self.qthread.progress.connect(lambda message : self.log_window.log_message(message))
@@ -251,6 +270,7 @@ class Classification(QWidget):
         
         self.qthread.finished.connect(self.qthread.deleteLater)
         self.qthread.finished.connect(lambda: self.progress_bar.setVisible(False))
+        self.qthread.finished.connect(lambda: self.enable_all())
         self.qthread.start()
 
     def handle_save_error(self, error_msg):

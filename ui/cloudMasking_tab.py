@@ -118,6 +118,24 @@ class CloudMasking(QWidget):
         self.setLayout(main_layout)  
         # Tambahkan web_view ke layout 
         
+    def disable_except(self, exceptions: list[QWidget] = []) -> None:
+        def is_in_exception_tree(widget: QWidget) -> bool:
+            for ex in exceptions:
+                current = widget
+                while current is not None:
+                    if current is ex:
+                        return True
+                    current = current.parentWidget()
+            return False
+
+        for child in self.findChildren(QWidget):
+            if not is_in_exception_tree(child):
+                child.setDisabled(True)
+
+    def enable_all(self) -> None:
+        for child in self.findChildren(QWidget):
+            child.setEnabled(True)
+
     def on_received_geojson(self, geojson: dict) -> None:
         if not self.is_authenticated:
             message = CustomMessageBox(
@@ -172,11 +190,11 @@ class CloudMasking(QWidget):
             return
         
         self.GEE_auth_thread = GEEAuth(project_name)
+        self.GEE_auth_thread.started.connect(self.disable_except) # disable all widgets
         self.GEE_auth_thread.finished.connect(self.handle_auth_finished)
-        self.GEE_auth_thread.finished.connect(lambda: self.auth_btn.setEnabled(True))
         self.GEE_auth_thread.finished.connect(self.GEE_auth_thread.deleteLater)
+        self.GEE_auth_thread.finished.connect(self.enable_all)
         self.GEE_auth_thread.start()
-        self.auth_btn.setEnabled(False)
 
     def process_geometry(self) -> None:
         """Process Sentinel-2 data."""

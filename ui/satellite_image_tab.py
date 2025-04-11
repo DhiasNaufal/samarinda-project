@@ -75,7 +75,25 @@ class SatelliteImage(QWidget):
 
     self.progress_bar = ProgressBarWidget(self)
     frame.add_widget(self.progress_bar)
-  
+
+  def disable_except(self, exceptions: list[QWidget] = []) -> None:
+      def is_in_exception_tree(widget: QWidget) -> bool:
+          for ex in exceptions:
+              current = widget
+              while current is not None:
+                  if current is ex:
+                      return True
+                  current = current.parentWidget()
+          return False
+
+      for child in self.findChildren(QWidget):
+          if not is_in_exception_tree(child):
+              child.setDisabled(True)
+
+  def enable_all(self) -> None:
+      for child in self.findChildren(QWidget):
+          child.setEnabled(True)
+
   def on_tile_provider_changed(self, val: str):
     zoom_level_options = next((tile_provider["zoom_level"] for tile_provider in TILE_PROVIDERS if tile_provider["name"] == val), None)
     self.zoom_level.set_options(zoom_level_options)
@@ -90,6 +108,9 @@ class SatelliteImage(QWidget):
 
     end = datetime.now()
     processing_time = calculate_time_diff(self.start, end)
+
+    # enable all widgets
+    self.enable_all()
 
     self.message_box.set_message("Gambar peta telah berhasil di download")
     self.message_box.set_informative_message(f"Selesai dalam waktu : {processing_time}\nTersimpan di : {self.output_path.get_value}.")
@@ -133,6 +154,7 @@ class SatelliteImage(QWidget):
       polygon=self.polygon,
       output_path=self.output_path.get_value
     )
+    self.download_tile_thread.started.connect(lambda: self.disable_except()) # disable all widgets
     self.download_tile_thread.started.connect(lambda: self.progress_bar.set_progress_range())
     self.download_tile_thread.started.connect(lambda: setattr(self, "start", datetime.now()))
     self.download_tile_thread.error_signal.connect(self.handle_error)
