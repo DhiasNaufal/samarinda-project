@@ -40,13 +40,13 @@ class_labels = {
 }
 
 class ProcessResult:
-  def __init__(self, input_tif: str, input_png: str):
+  def __init__(self, input_tif: str, input_png: str = "", image = None):
     self.input_tif = input_tif
     self.input_png = input_png
   
   # def run(self):
     self.meta, self.transform, self.crs = self.load_metadata(self.input_tif)
-    segmentasi_array = self.load_segmentation_image(self.input_png)
+    segmentasi_array = self.load_segmentation_image(self.input_png) if input_png else image
     self.class_array = self.decode_segmentation(segmentasi_array)
     self.gdf = self.get_gdf()
 

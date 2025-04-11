@@ -173,12 +173,16 @@ class Classification(QWidget):
         self.vegetation.setText("Vegetasi\t - m2")
         self.palmoil.setText("<h1>- m2</h1>")
 
-    def add_image_layer(self, filepath):
-        layer_name = get_filename(filepath, ext=False)
-        self.layer.add_item(layer_name)
+    def add_image_layer(self, filepath: str = "", **kwargs):
+        if filepath:
+            layer_name = get_filename(filepath, ext=False)
+            self.layer.add_item(layer_name)
 
-        self.graphics_view.load_raster(filepath)
-    
+            self.graphics_view.load_raster(path=filepath)
+        else:
+            self.layer.add_item(kwargs.get("layer_name"))
+            self.graphics_view.load_raster(cv_image=kwargs.get("image"), layer=kwargs.get("layer_name"))
+
     def remove_image_layer(self, layer_name):
         self.layer.remove_item(layer_name)
         self.graphics_view.remove_raster(layer_name)
@@ -198,7 +202,11 @@ class Classification(QWidget):
         self.default_area()
 
     def process_result(self, result):
-        self.add_image_layer(self.temp_output_path)
+        params = {
+            "layer_name": get_filename(self.temp_output_path, ext=False),
+            "image": result["image"]
+        }
+        self.add_image_layer(**params)
 
         self.result = result
         for label, area in result["total_area"].items():

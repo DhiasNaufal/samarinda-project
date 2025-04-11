@@ -143,7 +143,6 @@ class ClassificationBgProcess(QThread):
         #     meta.update(dtype=rasterio.uint8)
 
         seg_img = self.decode_segmentation_mask(mask)
-        # image = cv2.cvtColor(seg_img, cv2.COLOR_RGB2BGR)
         # # Convert OpenCV (H, W, C) to Rasterio (Bands, H, W)
         # image = np.transpose(image, (2, 0, 1))  # Rearrange dimensions
         # with rasterio.open(output_path, "w", **meta) as dst:
@@ -159,18 +158,19 @@ class ClassificationBgProcess(QThread):
         mask = self.predict_patched_image(model, self.image_path)
         
         # self.progress.emit("Menyimpan hasil segmentasi...")
-        self.save_result(mask, self.output_path)
+        image = self.decode_segmentation_mask(mask)
         self.progress.emit("Berhasil menyelesaikan proses prediksi...")
 
         self.progress.emit("Hitung luas area...")
-        process = ProcessResult(self.image_path, self.output_path)
+        process = ProcessResult(self.image_path, image=image)
         total_area = process.calculate_area()
         self.progress.emit("Proses klasifikasi selesai...")
         self.result.emit({
             "total_area": total_area,
             "gdf": process.gdf, 
             "meta": process.meta, 
-            "class_array": process.class_array
+            "class_array": process.class_array,
+            "image": image,
         })
 
 

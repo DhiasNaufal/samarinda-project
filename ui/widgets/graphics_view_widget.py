@@ -28,9 +28,16 @@ class GraphicsViewWidget(QWidget):
     layout.addWidget(self.view)
 
 
-  def load_raster(self, path: str, opacity: float = 1.0):
-    image = Image.open(path)
-    image_arr = np.array(image)
+  def load_raster(self, path: str = None, cv_image: np.ndarray = None, layer: str = "", opacity: float = 1.0):
+    if path is not None:
+      image = Image.open(path)
+      image_arr = np.array(image)
+
+      layer_name = get_filename(path, ext=False)
+    else:
+       image_arr = cv_image
+       layer_name = layer
+       
     height, width = image_arr.shape[:2]
 
     # Handle different image formats
@@ -50,7 +57,6 @@ class GraphicsViewWidget(QWidget):
     self.z_values.append(z_value)
     item.setZValue(z_value)
 
-    layer_name = get_filename(path, ext=False)
     self.layer_items[layer_name] = item
 
     self.scene.addItem(item)
