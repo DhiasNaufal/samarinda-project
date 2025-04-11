@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Leaflet Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
     <link
@@ -118,13 +119,28 @@
       map.addControl(drawControl);
 
       map.on("draw:created", function (e) {
+        // Check if the drawn layer is a rectangle
         var layer = e.layer;
-        drawnItems.addLayer(layer);
         var geojson = layer.toGeoJSON();
-        if (window.pyqtChannel) {
-          window.pyqtChannel.receiveGeoJSON(JSON.stringify(geojson));
+
+        // Check only rectangles
+        if (geojson.geometry.type === "Polygon") {
+          // Use turf.js to calculate area
+          var area = turf.area(geojson); // in square meters
+          console.log("Area (m²):", area);
+
+          if (area > 5000000) {
+            alert("Luas maksimum yang diperbolehkan adalah 500 hektar (5.000.000 m²). Silakan gambar persegi yang lebih kecil.");
+          } else {
+            drawnItems.addLayer(layer);
+            console.log("Rectangle GeoJSON:", geojson);
+
+            if (window.pyqtChannel) {
+              window.pyqtChannel.receiveGeoJSON(JSON.stringify(geojson));
+            }
+            console.log(JSON.stringify(layer.toGeoJSON()));
+          }
         }
-        console.log(JSON.stringify(layer.toGeoJSON()));
       });
       new QWebChannel(qt.webChannelTransport, function (channel) {
         window.pyqtChannel = channel.objects.pyqtChannel; // Pastikan channel terhubung
