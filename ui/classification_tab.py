@@ -116,13 +116,13 @@ class Classification(QWidget):
                 meta=self.result["meta"], 
                 class_array=self.result["class_array"]))
         result_frame.add_widget(download_tif)
-        download_geojson = FileInputWidget(
-            button_name="Download GeoJSON", 
-            filetype=[FileType.GEOJSON.value],
-            file_input_type=FileInputType.FILENAME.value)
-        download_geojson.path_selected.connect(
-            lambda path: self._start_worker(worker_type="download", mode="vector", output_path=path, gdf=self.result["gdf"]))
-        result_frame.add_widget(download_geojson)
+        # download_geojson = FileInputWidget(
+        #     button_name="Download GeoJSON", 
+        #     filetype=[FileType.GEOJSON.value],
+        #     file_input_type=FileInputType.FILENAME.value)
+        # download_geojson.path_selected.connect(
+        #     lambda path: self._start_worker(worker_type="download", mode="vector", output_path=path, gdf=self.result["gdf"]))
+        # result_frame.add_widget(download_geojson)
         
         # raster or vector layers
         label = QLabel("Layers")
