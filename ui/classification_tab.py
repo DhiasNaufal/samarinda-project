@@ -18,6 +18,8 @@ from utils.common import get_filename, get_string_date, get_file_extension
 
 from logic.classification.classificationBg import ClassificationBgProcess
 from logic.classification.save_worker import SaveWorker
+from logic.sentinel_classification.sentinel_image_classification import SentinelImageClassification
+from logic.sentinel_classification.save_worker import SentinelImageSaveWorker
 
 import os
 # from predict import main
@@ -50,7 +52,7 @@ class Classification(QWidget):
   
         self.model_dropdown = DropdownWidget(
             label="Pilih Model",
-            dropdown_options=["U-Net", "MVT", "ResNet"]
+            dropdown_options=["U-Net", "U-Net Sentinel"]
         )
         form_layout.add_widget(self.model_dropdown)
 
@@ -100,21 +102,14 @@ class Classification(QWidget):
             button_name="Download SHP", 
             filetype=[FileType.SHP.value],
             file_input_type=FileInputType.FILENAME.value)
-        download_shp.path_selected.connect(
-            lambda path: self._start_worker(worker_type="download", mode="vector", output_path=path, gdf=self.result["gdf"]))
+        download_shp.path_selected.connect(self.download_shp)
         
         result_frame.add_widget(download_shp)
         download_tif = FileInputWidget(
             button_name="Download TIFF", 
             filetype=[FileType.TIFF.value],
             file_input_type=FileInputType.FILENAME.value)
-        download_tif.path_selected.connect(
-            lambda path: self._start_worker(
-                worker_type="download", 
-                mode="raster", 
-                output_path=path, 
-                meta=self.result["meta"], 
-                class_array=self.result["class_array"]))
+        download_tif.path_selected.connect(self.download_tif)
         result_frame.add_widget(download_tif)
         # download_geojson = FileInputWidget(
         #     button_name="Download GeoJSON", 
@@ -201,6 +196,37 @@ class Classification(QWidget):
         # set all area to -
         self.default_area()
 
+    def download_shp(self, path):
+        if self.model_dropdown.get_value == "U-Net":
+            self._start_worker(
+                worker_type="download", 
+                mode="vector", 
+                output_path=path, 
+                gdf=self.result["gdf"])
+        elif self.model_dropdown.get_value == "U-Net Sentinel":
+            self._start_worker(
+                worker_type="download", 
+                mode="vector", 
+                output_path=path, 
+                reference_tif=self.imageInput.get_value,  
+                class_array=self.result["class_array"])
+    
+    def download_tif(self, path):
+        if self.model_dropdown.get_value == "U-Net":
+            self._start_worker(
+                worker_type="download", 
+                mode="raster", 
+                output_path=path, 
+                meta=self.result["meta"], 
+                class_array=self.result["class_array"])
+        elif self.model_dropdown.get_value == "U-Net Sentinel":
+            self._start_worker(
+                worker_type="download", 
+                mode="raster", 
+                output_path=path, 
+                reference_tif=self.imageInput.get_value,  
+                class_array=self.result["class_array"])
+
     def process_result(self, result):
         params = {
             "layer_name": get_filename(self.temp_output_path, ext=False),
@@ -209,6 +235,10 @@ class Classification(QWidget):
         self.add_image_layer(**params)
 
         self.result = result
+        if result["total_area"] is None:
+            return
+        
+        # set area to label
         for label, area in result["total_area"].items():
             if label == "ground":
                 self.ground.setText(f"Lahan\t\t {area:.2f} m2")
@@ -232,7 +262,7 @@ class Classification(QWidget):
             message.show()
             return
 
-        if self.model_dropdown.get_value != "U-Net":
+        if self.model_dropdown.get_value == "ResNet":
             message = CustomMessageBox(
                 parent=self,
                 title="Warning",
@@ -261,10 +291,25 @@ class Classification(QWidget):
         self.log_window.log_message('Memulai Klasifikasi')
 
         # start classification process
-        self._start_worker(worker_type="classification", image_path = self.imageInput.get_value, output_path = self.temp_output_path, result_name = result_name)
+        if self.model_dropdown.get_value == "U-Net":
+            self._start_worker(worker_type="classification", image_path = self.imageInput.get_value, output_path = self.temp_output_path, result_name = result_name)
+        elif self.model_dropdown.get_value == "U-Net Sentinel":
+            self._start_worker(worker_type="classification", image_path = self.imageInput.get_value)   
  
     def _start_worker(self, worker_type="", **kwargs):
-        self.qthread = ClassificationBgProcess(**kwargs) if worker_type == "classification" else SaveWorker(**kwargs)
+        if worker_type == "classification":
+            if self.model_dropdown.get_value == "U-Net":
+                self.qthread = ClassificationBgProcess(**kwargs)
+            elif self.model_dropdown.get_value == "U-Net Sentinel":
+                self.qthread = SentinelImageClassification(**kwargs)
+        elif worker_type == "download":
+            if self.model_dropdown.get_value == "U-Net":
+                self.qthread = SaveWorker(**kwargs)
+            elif self.model_dropdown.get_value == "U-Net Sentinel":
+                self.qthread = SentinelImageSaveWorker(**kwargs)
+        else:
+            self.log_window.log_message("Invalid worker type")
+            return
         
         self.qthread.started.connect(lambda: self.progress_bar.setVisible(True))
         self.qthread.started.connect(lambda: self.progress_bar.set_progress_range())
@@ -273,13 +318,10 @@ class Classification(QWidget):
         if worker_type == "classification":
             self.qthread.progress.connect(lambda message : self.log_window.log_message(message))
             self.qthread.result.connect(self.process_result)
-        elif worker_type == "download":
-            self.qthread.error.connect(self.handle_save_error)
+
+        self.qthread.error.connect(lambda error_msg: self.log_window.log_message(f"Error : {error_msg}", level=LogLevel.ERROR))
         
         self.qthread.finished.connect(self.qthread.deleteLater)
         self.qthread.finished.connect(lambda: self.progress_bar.setVisible(False))
         self.qthread.finished.connect(lambda: self.enable_all())
         self.qthread.start()
-
-    def handle_save_error(self, error_msg):
-        self.log_window.log_message(f"Error : {error_msg}", level=LogLevel.ERROR)

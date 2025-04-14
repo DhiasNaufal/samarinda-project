@@ -20,16 +20,16 @@ class LogWidget(QWidget):
   def log_message(
       self, 
       text: str, 
-      type: str = LogLevel.NONE.value
+      level: str = LogLevel.NONE.value
   ) -> None:
-    if type == LogLevel.ERROR.value:
+    if level == LogLevel.ERROR.value:
       color = ColorOptions.RED.value
-    elif type == LogLevel.WARNING.value:
+    elif level == LogLevel.WARNING.value:
       color = ColorOptions.Yellow.value
     else:
       color = ColorOptions.BLACK.value
 
-    text = f"{get_current_time()}: {f'[{type}]' if type else ''} {text}"
+    text = f"{get_current_time()}: {f'[{level}]' if level else ''} {text}"
     self.log_window.append(f'<span style="color:{color};">{text}</span>')
 
     
