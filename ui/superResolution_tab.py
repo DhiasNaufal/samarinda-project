@@ -10,7 +10,9 @@ from .widgets.message_box_widget import CustomMessageBox, QMessageBox
 from .widgets.date_widget import DateWidget
 
 from utils.common import resource_path
+from utils.logger import setup_logger
 
+logger = setup_logger()
 class SuperResolution(QWidget):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
@@ -46,7 +48,7 @@ class SuperResolution(QWidget):
     def on_coordinate_received(self, coordinates: str) -> None:
         """Receive coordinates from JavaScript."""
         self.coordinates = coordinates
-        print("Coordinates received:", self.coordinates)
+        logger.info(f"Coordinates received: {self.coordinates}")
 
     def start_super_resolution(self) -> None:
         """Start the super resolution process."""

@@ -7,21 +7,24 @@ from scipy.spatial import cKDTree
 from PIL import Image
 
 from utils.common import get_file_extension
+from utils.logger import setup_logger
+
+logger = setup_logger()
 
 def save_vector(gdf: gpd.GeoDataFrame, output_path: str):
   ext = get_file_extension(output_path)
   if ext == "shp":
     gdf.to_file(output_path)
-    print(f"Shapefile berhasil disimpan : {output_path}")
+    logger.info(f"Shapefile berhasil disimpan : {output_path}")
   elif ext == "geojson":
     gdf.to_file(output_path, driver="GeoJSON")
-    print(f"Geojson file berhasil disimpan : {output_path}")
+    logger.info(f"Geojson file berhasil disimpan : {output_path}")
 
 def save_geotiff(meta, class_array, output_path: str, nodata_value=255):
   meta.update({"dtype": rasterio.uint8, "nodata": nodata_value, "count": 1})
   with rasterio.open(output_path, "w", **meta) as dst:
       dst.write(class_array, 1)
-  print(f"GeoTIFF berhasil disimpan: {output_path}")
+  logger.info(f"GeoTIFF berhasil disimpan: {output_path}")
 
 decoded_classes = {
   (167, 168, 167): 0, 
@@ -104,28 +107,28 @@ class ProcessResult:
     
     luas_total = self.gdf.groupby("label")["luas"].sum()
     
-    # print("\n Total Luas Tiap Kelas:")
+    # logger.info("\n Total Luas Tiap Kelas:")
     # for label, area in luas_total.items():
-    #     print(f" - {label}: {area:.2f} m2")
+    #     logger.info(f" - {label}: {area:.2f} m2")
     
     return luas_total
   
   def save_shapefile(self, output_path: str):
     self.gdf.to_file(output_path)
-    print(f"Shapefile berhasil disimpan: {output_path}")
+    logger.info(f"Shapefile berhasil disimpan: {output_path}")
 
   def save_geotiff(self, output_path: str, nodata_value=255):
     self.meta.update({"dtype": rasterio.uint8, "nodata": nodata_value, "count": 1})
     with rasterio.open(output_path, "w", **self.meta) as dst:
         dst.write(self.class_array, 1)
-    print(f"GeoTIFF berhasil disimpan: {output_path}")
+    logger.info(f"GeoTIFF berhasil disimpan: {output_path}")
 
 if __name__ == "__main__":
    process = ProcessResult(
       input_tif="D:\\samarinda-project\\data\\TEST1.tif",
       input_png="D:\\samarinda-project\output\\Hasil - TEST1-20250315170317.png"
    )
-   print(process.calculate_area())
+   logger.info(process.calculate_area())
 
    process.save_shapefile("res.shp")
    process.save_geotiff("res.tif")

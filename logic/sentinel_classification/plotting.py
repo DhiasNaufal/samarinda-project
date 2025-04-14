@@ -17,6 +17,8 @@ from .constants import LAND_COVER_CLASSES
 from .utils import get_file_paths_for_images_and_labels, get_number_of_images_and_labels
 matplotlib.use('Qt5Agg')
 
+from utils.logger import setup_logger
+logger = setup_logger()
 
 def plot_images_and_labels(number_images_to_plot, save, images_dir, labels_dir):
     image_paths, label_paths = get_file_paths_for_images_and_labels(images_dir, labels_dir)
@@ -24,7 +26,7 @@ def plot_images_and_labels(number_images_to_plot, save, images_dir, labels_dir):
 
     for img in range(number_images_to_plot):
         random_number = random.randint(0, number_of_samples - 1)
-        print(f"Displaying {random_number}th image and label")
+        logger.info(f"Displaying {random_number}th image and label")
 
         image_path = image_paths[random_number]
         label_path = label_paths[random_number]
@@ -152,9 +154,9 @@ def _s2_image_to_rgb(image):
 
 
 def _print_image_metadata(image):
-    print(f"Shape: width x height x depth")
-    print(f"\t\t{image.width} x {image.height} x {image.count}")
-    print(f"CRS: {image.crs}")
+    logger.info(f"Shape: width x height x depth")
+    logger.info(f"\t\t{image.width} x {image.height} x {image.count}")
+    logger.info(f"CRS: {image.crs}")
 
 
 def _get_patches(im, image):

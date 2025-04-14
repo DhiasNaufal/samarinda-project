@@ -1,7 +1,10 @@
 from PyQt6.QtCore import pyqtSignal, QThread
-from utils.common import get_file_extension
 import rasterio
 
+from utils.common import get_file_extension
+from utils.logger import setup_logger
+
+logger = setup_logger()
 class SaveWorker(QThread):
     error = pyqtSignal(str)
 
@@ -24,6 +27,7 @@ class SaveWorker(QThread):
                 raise ValueError("Unsupported save mode")
         except Exception as e:
             self.error.emit(str(e))
+            logger.critical(f"Error in save worker: {e}")
 
     def save_vector(self):
         ext = get_file_extension(self.output_path)
@@ -33,7 +37,7 @@ class SaveWorker(QThread):
             self.gdf.to_file(self.output_path, driver="GeoJSON")
         else:
             raise ValueError("Unsupported vector file format")
-        print(f"Vector file saved: {self.output_path}")
+        logger.info(f"Vector file saved: {self.output_path}")
 
     def save_geotiff(self):
         self.meta.update({
@@ -43,4 +47,4 @@ class SaveWorker(QThread):
         })
         with rasterio.open(self.output_path, "w", **self.meta) as dst:
             dst.write(self.class_array, 1)
-        print(f"GeoTIFF saved: {self.output_path}")
+        logger.info(f"GeoTIFF saved: {self.output_path}")

@@ -319,7 +319,7 @@ class Classification(QWidget):
             self.qthread.progress.connect(lambda message : self.log_window.log_message(message))
             self.qthread.result.connect(self.process_result)
 
-        self.qthread.error.connect(lambda error_msg: self.log_window.log_message(f"Error : {error_msg}", level=LogLevel.ERROR.value))
+        self.qthread.error.connect(lambda error_msg: self.log_window.log_message(error_msg, level=LogLevel.ERROR.value))
         
         self.qthread.finished.connect(self.qthread.deleteLater)
         self.qthread.finished.connect(lambda: self.progress_bar.setVisible(False))

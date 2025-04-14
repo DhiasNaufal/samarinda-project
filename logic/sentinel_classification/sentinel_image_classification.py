@@ -18,9 +18,13 @@ from scipy.ndimage import generic_filter
 from .unet import SwinTransformerBlock
 from .train_model import _masked_sparse_categorical_crossentropy
 from .constants import LAND_COVER_CLASSES
+
 from utils.common import resource_path
+from utils.logger import setup_logger
 
 import numpy as np
+
+logger = setup_logger()
 
 class SentinelImageClassification(QThread):
   progress = pyqtSignal(str) 
@@ -108,5 +112,5 @@ class SentinelImageClassification(QThread):
             "image": image,
         })
     except Exception as e:
-      print(f"Error: {e}")
+      logger.critical(f"Error: {e}")
       self.error.emit(str(e))

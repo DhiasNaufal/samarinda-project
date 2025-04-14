@@ -11,6 +11,9 @@ import os
 
 from .process_result import ProcessResult
 from utils.common import resource_path
+from utils.logger import setup_logger
+
+logger = setup_logger()
 
 class ClassificationBgProcess(QThread):
     progress = pyqtSignal(str)
@@ -159,7 +162,7 @@ class ClassificationBgProcess(QThread):
             self.progress.emit("Melakukan prediksi...")
             mask = self.predict_patched_image(model, self.image_path)
             
-            # self.progress.emit("Menyimpan hasil segmentasi...")
+            self.progress.emit("Menyimpan hasil segmentasi...")
             image = self.decode_segmentation_mask(mask)
             self.progress.emit("Berhasil menyelesaikan proses prediksi...")
 
@@ -176,7 +179,7 @@ class ClassificationBgProcess(QThread):
             })
         except Exception as e:
             self.error.emit(str(e))
-            print(f"Error: {e}")
+            logger.critical(f"Error: {e}")
 
 
 

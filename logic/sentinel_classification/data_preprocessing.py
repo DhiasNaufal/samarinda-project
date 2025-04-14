@@ -8,6 +8,9 @@ from .utils import get_file_paths_for_images_and_labels
 
 import tensorflow as tf
 
+from utils.logger import setup_logger
+logger = setup_logger()
+
 
 def prepare_datasets(batch_size, train_size, images_dir, labels_dir):
     (train_image_paths, val_image_paths, test_image_paths,
@@ -31,9 +34,9 @@ def _split_data_for_training_testing_and_validation(test_size, images_dir, label
     val_image_paths, test_image_paths, val_label_paths, test_label_paths = _train_test_split_paths(
         test_image_paths, test_label_paths, test_size)
 
-    print(f'There are {len(train_image_paths)} images in the Training Set')
-    print(f'There are {len(val_image_paths)} images in the Validation Set')
-    print(f'There are {len(test_image_paths)} images in the Test Set')
+    logger.info(f'There are {len(train_image_paths)} images in the Training Set')
+    logger.info(f'There are {len(val_image_paths)} images in the Validation Set')
+    logger.info(f'There are {len(test_image_paths)} images in the Test Set')
     return train_image_paths, val_image_paths, test_image_paths, train_label_paths, val_label_paths, test_label_paths
 
 

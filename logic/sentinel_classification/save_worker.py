@@ -1,5 +1,4 @@
 from PyQt6.QtCore import pyqtSignal, QThread
-from utils.common import get_file_extension
 from scipy.ndimage import generic_filter 
 from shapely.geometry import shape
 
@@ -8,6 +7,9 @@ import numpy as np
 import geopandas as gpd
 
 from .constants import LAND_COVER_CLASSES
+from utils.logger import setup_logger
+
+logger = setup_logger()
 
 class SentinelImageSaveWorker(QThread):
     error = pyqtSignal(str)
@@ -30,6 +32,7 @@ class SentinelImageSaveWorker(QThread):
                 raise ValueError("Unsupported save mode")
         except Exception as e:
             self.error.emit(str(e))
+            logger.critical(f"Error in save worker: {e}")
 
     def save_geotiff(self):
         with rasterio.open(self.reference_tif) as src:
@@ -38,7 +41,7 @@ class SentinelImageSaveWorker(QThread):
 
             with rasterio.open(self.output_path, "w", **profile) as dst:
                 dst.write(self.class_array, 1)
-            print(f"GeoTIFF saved: {self.output_path}")
+            logger.info(f"GeoTIFF saved: {self.output_path}")
 
     def majority_filter(self, values):
         values = values.astype(int)
@@ -49,9 +52,9 @@ class SentinelImageSaveWorker(QThread):
         return np.argmax(counts)
 
     def smooth_mask(self, mask, size=5):
-        print(f"Melakukan smoothing mask dengan kernel size: {size}x{size}")
+        logger.info(f"Melakukan smoothing mask dengan kernel size: {size}x{size}")
         smoothed = generic_filter(mask, self.majority_filter, size=size, mode='nearest')
-        print("Kelas unik setelah smoothing:", np.unique(smoothed))
+        logger.info("Kelas unik setelah smoothing:", np.unique(smoothed))
         return smoothed
 
 
@@ -90,6 +93,6 @@ class SentinelImageSaveWorker(QThread):
             }, crs=crs)
 
             gdf.to_file(self.output_path)
-            print(f"Hasil SHP disimpan di: {self.output_path}")
+            logger.info(f"Hasil SHP disimpan di: {self.output_path}")
 
     

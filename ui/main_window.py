@@ -6,9 +6,12 @@ from ui.classification_tab import Classification
 from ui.satellite_image_tab import SatelliteImage
 from ui.under_development import UnderDevelopment
 from PyQt6.QtCore import Qt
-from utils.common import resource_path
 import os
 
+from utils.common import resource_path
+from utils.logger import setup_logger
+
+logger = setup_logger()
 class MainWindow(QWidget):
     def __init__(self) -> None:
         super().__init__()
@@ -43,6 +46,6 @@ class MainWindow(QWidget):
             with open(filename, "r", encoding="utf-8") as file:
                 self.setStyleSheet(file.read())
         except FileNotFoundError:
-            print(f"Warning: File {filename} tidak ditemukan.")
+            logger.warning(f"Warning: File {filename} tidak ditemukan.")
         except PermissionError:
-            print(f"Error: Akses dibatasi untuk file : {filename}")
+            logger.critical(f"Error: Akses dibatasi untuk file : {filename}")

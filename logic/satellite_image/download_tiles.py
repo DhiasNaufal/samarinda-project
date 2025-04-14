@@ -13,7 +13,9 @@ from pyproj import CRS, Transformer
 
 from .tile_providers import TILE_PROVIDERS
 from utils.common import get_file_extension
+from utils.logger import setup_logger
 
+logger = setup_logger()
 Image.MAX_IMAGE_PIXELS = None
 class DownloadTiles(QThread):
     error_signal = pyqtSignal(str)
@@ -48,6 +50,7 @@ class DownloadTiles(QThread):
             self.finish_signal.emit()   
         except Exception as e:
             self.error_signal.emit(str(e))
+            logger.critical(f"Error in download tiles: {e}")
 
     def tile_to_quadkey(self, x, y):
         """Convert tile coordinates to a Bing Maps quadkey."""
@@ -88,7 +91,7 @@ class DownloadTiles(QThread):
         if response.status_code == 200:
             return Image.open(BytesIO(response.content))
         else:
-            print(f"Failed to download tile {x},{y} at zoom {self.zoom}")
+            logger.warning(f"Failed to download tile {x},{y} at zoom {self.zoom}")
             return None
 
     def download_tiles(self):
@@ -170,7 +173,7 @@ class DownloadTiles(QThread):
         # Tentukan EPSG UTM berdasarkan lokasi (Samarinda: UTM 50S, EPSG:32750)
         epsg_code = self.get_utm_crs((lon_min + lon_max) / 2, (lat_min + lat_max) / 2)
         utm_crs = CRS.from_epsg(epsg_code)
-        print(f"Using EPSG:{epsg_code}")
+        logger.info(f"Using EPSG:{epsg_code}")
 
         # Transformasi dari WGS 84 ke UTM
         transformer = Transformer.from_crs("EPSG:4326", utm_crs, always_xy=True)
@@ -210,4 +213,4 @@ class DownloadTiles(QThread):
             for i in range(3):  # Simpan masing-masing band RGB
                 dst.write(image_array[:, :, i], i + 1)
 
-        print(f"Saved: {self.output_path} with EPSG:{epsg_code}")
+        logger.info(f"Saved: {self.output_path} with EPSG:{epsg_code}")

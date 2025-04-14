@@ -7,7 +7,10 @@ from .plotting import plot_training_results
 from .unet import unet_model
 from .constants import N_CLASSES
 
-print("GPU Available:", tf.config.list_physical_devices('GPU'))
+from utils.logger import setup_logger
+logger = setup_logger()
+
+logger.info(f"GPU Available: {tf.config.list_physical_devices('GPU')}")
 
 def train_model(input_shape, filters, n_classes, epochs, batch_size, train_size, save_model,
                 plot_training_summary, save_training_summary, images_dir, labels_dir):
