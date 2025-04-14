@@ -51,8 +51,8 @@ class Classification(QWidget):
         form_layout.add_widget(self.imageInput)
   
         self.model_dropdown = DropdownWidget(
-            label="Pilih Model",
-            dropdown_options=["U-Net", "U-Net Sentinel"]
+            label="Sumber Gambar",
+            dropdown_options=["Citra Satelit", "Sentinel 2", "UAV"]
         )
         form_layout.add_widget(self.model_dropdown)
 
@@ -197,13 +197,13 @@ class Classification(QWidget):
         self.default_area()
 
     def download_shp(self, path):
-        if self.model_dropdown.get_value == "U-Net":
+        if self.model_dropdown.get_value == "Citra Satelit":
             self._start_worker(
                 worker_type="download", 
                 mode="vector", 
                 output_path=path, 
                 gdf=self.result["gdf"])
-        elif self.model_dropdown.get_value == "U-Net Sentinel":
+        elif self.model_dropdown.get_value == "Sentinel 2":
             self._start_worker(
                 worker_type="download", 
                 mode="vector", 
@@ -212,14 +212,14 @@ class Classification(QWidget):
                 class_array=self.result["class_array"])
     
     def download_tif(self, path):
-        if self.model_dropdown.get_value == "U-Net":
+        if self.model_dropdown.get_value == "Citra Satelit":
             self._start_worker(
                 worker_type="download", 
                 mode="raster", 
                 output_path=path, 
                 meta=self.result["meta"], 
                 class_array=self.result["class_array"])
-        elif self.model_dropdown.get_value == "U-Net Sentinel":
+        elif self.model_dropdown.get_value == "Sentinel 2":
             self._start_worker(
                 worker_type="download", 
                 mode="raster", 
@@ -262,11 +262,11 @@ class Classification(QWidget):
             message.show()
             return
 
-        if self.model_dropdown.get_value == "ResNet":
+        if self.model_dropdown.get_value == "UAV":
             message = CustomMessageBox(
                 parent=self,
                 title="Warning",
-                message=f"Model {self.model_dropdown.get_value} saat ini belum tersedia",
+                message=f"Model untuk sumber gambar {self.model_dropdown.get_value} saat ini belum tersedia",
                 icon=QMessageBox.Icon.Warning
             )
             message.show()
@@ -291,21 +291,21 @@ class Classification(QWidget):
         self.log_window.log_message('Memulai Klasifikasi')
 
         # start classification process
-        if self.model_dropdown.get_value == "U-Net":
+        if self.model_dropdown.get_value == "Citra Satelit":
             self._start_worker(worker_type="classification", image_path = self.imageInput.get_value, output_path = self.temp_output_path, result_name = result_name)
-        elif self.model_dropdown.get_value == "U-Net Sentinel":
+        elif self.model_dropdown.get_value == "Sentinel 2":
             self._start_worker(worker_type="classification", image_path = self.imageInput.get_value)   
  
     def _start_worker(self, worker_type="", **kwargs):
         if worker_type == "classification":
-            if self.model_dropdown.get_value == "U-Net":
+            if self.model_dropdown.get_value == "Citra Satelit":
                 self.qthread = ClassificationBgProcess(**kwargs)
-            elif self.model_dropdown.get_value == "U-Net Sentinel":
+            elif self.model_dropdown.get_value == "Sentinel 2":
                 self.qthread = SentinelImageClassification(**kwargs)
         elif worker_type == "download":
-            if self.model_dropdown.get_value == "U-Net":
+            if self.model_dropdown.get_value == "Citra Satelit":
                 self.qthread = SaveWorker(**kwargs)
-            elif self.model_dropdown.get_value == "U-Net Sentinel":
+            elif self.model_dropdown.get_value == "Sentinel 2":
                 self.qthread = SentinelImageSaveWorker(**kwargs)
         else:
             self.log_window.log_message("Invalid worker type")

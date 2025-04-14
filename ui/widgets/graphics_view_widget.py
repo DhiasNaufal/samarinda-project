@@ -53,7 +53,6 @@ class GraphicsViewWidget(QWidget):
 
       return image
 
-
   def load_raster(self, path: str = None, cv_image: np.ndarray = None, layer: str = "", opacity: float = 1.0):
     if path is not None:
       # image = Image.open(path)

@@ -33,9 +33,6 @@ class SentinelImageClassification(QThread):
     self.image_path = image_path
     self.tile_size = tile_size
 
-    self.model = self.load_unet_model(resource_path(os.path.join("logic", "sentinel_classification", "model", "unet_model_2025-04-09_12-12-51.keras")))
-
-
   def load_unet_model(self, model_path):
     with custom_object_scope({
         'SwinTransformerBlock': SwinTransformerBlock,
@@ -67,7 +64,10 @@ class SentinelImageClassification(QThread):
   def run(self):
     try:
       # model = load_unet_model(resource_path(os.path.join("logic", "sentinel_classification", "unet_model_2025-04-09_12-12-51.keras")))
+      self.progress.emit("Memuat model...")
+      self.model = self.load_unet_model(resource_path(os.path.join("logic", "sentinel_classification", "model", "unet_model_2025-04-09_12-12-51.keras")))
 
+      self.progress.emit("Memuat gambar...")
       with rasterio.open(self.image_path, 'r') as src:
         height, width = src.height, src.width
         channels = src.count
@@ -76,7 +76,7 @@ class SentinelImageClassification(QThread):
 
         for row in range(0, height, self.tile_size):
           for col in range(0, width, self.tile_size):
-            print(f"Memproses tile row={row}, col={col}")
+            self.progress.emit(f"Memproses tile row={row}, col={col}")
             window = Window(col_off=col, row_off=row,
                             width=min(self.tile_size, width - col),
                             height=min(self.tile_size, height - row))
@@ -97,7 +97,9 @@ class SentinelImageClassification(QThread):
         # self.result.emit(prediction_mask)
         # image: np.ndarray 
         image = self.colored_prediction(prediction_mask)
+        self.progress.emit("Berhasil menyelesaikan proses prediksi...")
 
+        self.progress.emit("Proses klasifikasi selesai...")
         self.result.emit({
             "total_area": None,
             "gdf": 0.0, 

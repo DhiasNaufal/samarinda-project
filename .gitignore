@@ -9,3 +9,7 @@ test*.*
 output/
 build/
 dist/
+
+hgu-samarinda/
+logic/classification/model/
+logic/sentinel_classification/model/
