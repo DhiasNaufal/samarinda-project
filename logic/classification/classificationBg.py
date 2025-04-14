@@ -29,7 +29,7 @@ class ClassificationBgProcess(QThread):
     def load_image(self, image_path):
         image = cv2.imread(image_path)
         if image is None:
-            raise ValueError(f"Gambar tidak ditemukan: {image_path}")
+            raise ValueError(f"Gagal memuat gambar")
         return image, image.shape[:2]  # (H, W)
 
     # ================================

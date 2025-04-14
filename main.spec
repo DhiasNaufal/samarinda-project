@@ -10,12 +10,16 @@ for package in pkgutil.iter_modules(rasterio.__path__, prefix="rasterio."):
 
 pyogrio_datas, pyogrio_binaries, pyogrio_hiddenimports = collect_all("pyogrio")
 
+models = [
+    ("logic/sentinel_classification/model/unet_model_2025-04-09_12-12-51.keras", "logic/sentinel_classification/model"),
+    ("logic/classification/model/best_model_fix.h5", "logic/classification/model"),
+]
 
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=pyogrio_binaries,
-    datas=[('assets', 'assets'), ("best_model_fix.h5", ".")] + pyogrio_datas,
+    datas=[('assets', 'assets')] + models + pyogrio_datas,
     hiddenimports=additional_packages + pyogrio_hiddenimports,
     hookspath=[],
     hooksconfig={},
@@ -40,7 +44,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
