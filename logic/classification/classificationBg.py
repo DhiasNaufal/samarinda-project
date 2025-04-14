@@ -152,27 +152,31 @@ class ClassificationBgProcess(QThread):
         # self.progress.emit(f"Hasil segmentasi disimpan di: {output_path}")
 
     def run(self):
-        self.progress.emit("Memuat model...")
-        model = load_model(resource_path(os.path.join("logic", "classification", "model", "best_model_fix.h5")), compile=False)
+        try:
+            self.progress.emit("Memuat model...")
+            model = load_model(resource_path(os.path.join("logic", "classification", "model", "best_model_fix.h5")), compile=False)
 
-        self.progress.emit("Melakukan prediksi...")
-        mask = self.predict_patched_image(model, self.image_path)
-        
-        # self.progress.emit("Menyimpan hasil segmentasi...")
-        image = self.decode_segmentation_mask(mask)
-        self.progress.emit("Berhasil menyelesaikan proses prediksi...")
+            self.progress.emit("Melakukan prediksi...")
+            mask = self.predict_patched_image(model, self.image_path)
+            
+            # self.progress.emit("Menyimpan hasil segmentasi...")
+            image = self.decode_segmentation_mask(mask)
+            self.progress.emit("Berhasil menyelesaikan proses prediksi...")
 
-        self.progress.emit("Hitung luas area...")
-        process = ProcessResult(self.image_path, image=image)
-        total_area = process.calculate_area()
-        self.progress.emit("Proses klasifikasi selesai...")
-        self.result.emit({
-            "total_area": total_area,
-            "gdf": process.gdf, 
-            "meta": process.meta, 
-            "class_array": process.class_array,
-            "image": image,
-        })
+            self.progress.emit("Hitung luas area...")
+            process = ProcessResult(self.image_path, image=image)
+            total_area = process.calculate_area()
+            self.progress.emit("Proses klasifikasi selesai...")
+            self.result.emit({
+                "total_area": total_area,
+                "gdf": process.gdf, 
+                "meta": process.meta, 
+                "class_array": process.class_array,
+                "image": image,
+            })
+        except Exception as e:
+            self.error.emit(str(e))
+            print(f"Error: {e}")
 
 
 
