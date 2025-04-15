@@ -21,7 +21,7 @@ from .widgets.progress_bar_widget import ProgressBarWidget
 from .widgets.dynamic_widget import DynamicWidget
 from .widgets.message_box_widget import CustomMessageBox, QMessageBox
 
-from utils.enum import LogLevel, FileType
+from utils.enum import LogLevel, FileType, ColorOptions, LayoutDirection
 from utils.common import resource_path
 
 from logic.map import Map
@@ -46,7 +46,7 @@ class CloudMasking(QWidget):
         form_widget.add_widget(self.project_name)
 
         # Authenticate Button
-        self.auth_btn = ButtonWidget("Autentikasi Akun GEE")
+        self.auth_btn = ButtonWidget(name="Autentikasi Akun GEE")
         self.auth_btn.clicked.connect(self.authenticate_gee)
         form_widget.add_widget(self.auth_btn)
 
@@ -54,6 +54,7 @@ class CloudMasking(QWidget):
         self.geojson = FileInputWidget(
             label="Dokumen GeoJSON",
             button_name="Muat GeoJSON",
+            layout_direction=LayoutDirection.HORIZONTAL.value,
             filetype=[FileType.GEOJSON.value],
             file_dialog_title="Pilih Dokumen GeoJSON"
         )
@@ -89,7 +90,11 @@ class CloudMasking(QWidget):
         self.process_btn.clicked.connect(self.process_geometry)
         form_widget.add_widget(self.process_btn)
 
-        self.map_btn = ButtonWidget("Buat Peta")
+        self.map_btn = ButtonWidget(
+            name="Buat Peta", 
+            button_color=ColorOptions.LIGHT_GRAY.value,
+            button_hover_color=ColorOptions.MEDIUM_GRAY.value,
+            button_font_color=ColorOptions.MEDIUM_BLUE.value)
         self.map_btn.clicked.connect(self.generate_map)
         form_widget.add_widget(self.map_btn)
 
@@ -160,7 +165,6 @@ class CloudMasking(QWidget):
             return
         
         if file_path:
-            self.geojson.set_label(f"Dokumen GeoJSON : {file_path}")
             self.geojson_path = file_path
 
             with open(file_path, "r") as f:

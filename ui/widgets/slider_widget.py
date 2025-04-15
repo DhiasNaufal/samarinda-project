@@ -31,6 +31,7 @@ class SliderWidget(QWidget):
       orientation: Qt.Orientation
     ) -> None:
     layout = QVBoxLayout(self)
+    layout.setContentsMargins(0, 0, 0, 0)
     layout.setAlignment(Qt.AlignmentFlag.AlignTop)    
 
     self.label = QLabel(f"{self.default_label} {self.default_value}")

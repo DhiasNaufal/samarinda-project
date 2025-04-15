@@ -17,6 +17,7 @@ from logic.satellite_image.download_tiles import DownloadTiles
 from logic.satellite_image.tile_providers import TILE_PROVIDERS
 
 from utils.common import get_string_date, calculate_time_diff, is_default_filename, resource_path
+from utils.enum import LayoutDirection
 
 import os
 
@@ -34,7 +35,7 @@ class SatelliteImage(QWidget):
 
   def init_ui(self):
     layout = QVBoxLayout(self)
-    layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
     self.web_view = WebViewWidget(map_path=resource_path(os.path.join("assets", "satellite_image_map.html")))
     self.web_view.geojson_generated.connect(self.on_received_geojson)
@@ -62,14 +63,14 @@ class SatelliteImage(QWidget):
 
     self.output_path = FileInputWidget(
       label="Tentukan output file",
+      layout_direction=LayoutDirection.HORIZONTAL.value,
       filetype=[FileType.TIFF.value, FileType.PNG.value, FileType.JPG.value],
       file_input_type=FileInputType.FILENAME.value,
       default_path="(dibuat otomatis oleh sistem)"
     )
-    self.output_path.path_selected.connect(lambda path: self.output_path.set_label(f"Tentukan output file : {path}"))
     frame.add_widget(self.output_path)
 
-    download_btn = ButtonWidget("Download")
+    download_btn = ButtonWidget(name="Download")
     download_btn.clicked.connect(self.download_image)
     frame.add_widget(download_btn)
 

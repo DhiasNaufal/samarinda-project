@@ -26,6 +26,7 @@ class TextInputWidget(QWidget):
     def init_ui(self) -> None:
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         self.label_widget = QLabel(self.label)
         layout.addWidget(self.label_widget)

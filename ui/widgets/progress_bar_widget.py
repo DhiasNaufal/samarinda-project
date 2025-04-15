@@ -11,6 +11,7 @@ class ProgressBarWidget(QWidget):
   def init_ui(self):
     layout = QVBoxLayout(self)
     layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+    layout.setContentsMargins(0, 0, 0, 0)
 
     self.progress_bar = QProgressBar(self)
     self.progress_bar.setMinimum(0)

@@ -1,4 +1,5 @@
-from PyQt6.QtWidgets import QWidget, QFrame, QVBoxLayout, QLayout
+from PyQt6.QtWidgets import QWidget, QFrame, QVBoxLayout, QLayout, QSpacerItem, QSizePolicy
+from PyQt6.QtCore import Qt
 from typing import Optional
 
 class FrameWidget(QWidget):
@@ -12,14 +13,24 @@ class FrameWidget(QWidget):
 
     # define a layout for the frame to hold widgets
     self.frame_layout = QVBoxLayout(self.frame)
+    self.frame_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
     main_layout = QVBoxLayout(self)
+    main_layout.setAlignment(Qt.AlignmentFlag.AlignTop) 
+    main_layout.setContentsMargins(0, 0, 0, 0)
     main_layout.addWidget(self.frame)
+  
+  @property
+  def add_spacer_item(self):
+    spacer = QSpacerItem(10, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Maximum)
+    self.frame_layout.addSpacerItem(spacer)
 
   def add_widget(self, widget: QWidget):
+    self.add_spacer_item
     self.frame_layout.addWidget(widget)
 
   def add_layout(self, layout: QLayout):
+    self.add_spacer_item
     self.frame_layout.addLayout(layout)
 
   def set_frame_size(self, width, height):

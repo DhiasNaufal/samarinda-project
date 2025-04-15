@@ -7,10 +7,10 @@ class ButtonWidget(QtWidgets.QPushButton):
     def __init__(
             self, 
             name: str = "...", 
-            margin: int = 10,
-            button_color: ColorOptions = ColorOptions.LIGHT_GRAY.value, 
-            button_hover_color: ColorOptions = ColorOptions.MEDIUM_GRAY.value,
-            button_font_color: ColorOptions = ColorOptions.BLACK.value, 
+            margin: int = 0,
+            button_color: ColorOptions = ColorOptions.LIGHT_BLUE.value, 
+            button_hover_color: ColorOptions = ColorOptions.MEDIUM_BLUE.value,
+            button_font_color: ColorOptions = ColorOptions.WHITE.value, 
             fixed_width: int = None, 
             parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
@@ -21,8 +21,8 @@ class ButtonWidget(QtWidgets.QPushButton):
                 background-color: {button_color};
                 color: {button_font_color};
                 border: none;
-                padding: 8px;
                 border-radius: 5px;
+                padding: 8px;
                 {f'margin-left: {margin}px; margin-right: {margin}px;' if margin else ''}
             }}
             QPushButton:hover {{

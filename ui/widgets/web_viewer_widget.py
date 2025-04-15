@@ -18,6 +18,7 @@ class WebViewWidget(QWidget):
 
   def init_ui(self) -> None:
     layout = QVBoxLayout(self)
+    layout.setContentsMargins(0, 0, 0, 0)
     layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
     self.web_view = QWebEngineView()

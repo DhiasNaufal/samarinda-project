@@ -28,7 +28,8 @@ class DateWidget(QWidget):
     else:
       layout = QHBoxLayout(self) 
       layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
-    
+    layout.setContentsMargins(0, 0, 0, 0)
+
     label = QLabel(self.label)
     layout.addWidget(label)
 

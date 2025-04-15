@@ -39,3 +39,5 @@ class ColorOptions(Enum):
   WHITE = "#FFFFFF"
   LIGHT_GRAY = "#F0F0F0"
   MEDIUM_GRAY = "#E0E0E0"
+  LIGHT_BLUE = "#0096C3"
+  MEDIUM_BLUE = "#017FA7"

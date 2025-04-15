@@ -1,25 +1,28 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFileDialog
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFileDialog, QLineEdit
 from PyQt6.QtCore import pyqtSignal, Qt
 
 from typing import Optional, List
 
 from .button_widget import ButtonWidget
 
-from utils.enum import FileType, FileInputType, ColorOptions
+from utils.enum import FileType, FileInputType, ColorOptions, LayoutDirection
 class FileInputWidget(QWidget):
     path_selected = pyqtSignal(str)
 
     def __init__(
             self, 
             label: str = "", 
-            button_name: str = "Pilih File", 
+            button_name: str = "...", 
             button_width: Optional[int] = None, 
-            button_font_color: ColorOptions = ColorOptions.BLACK.value, 
-            button_color: ColorOptions = ColorOptions.LIGHT_GRAY.value,  
+            button_font_color: ColorOptions = ColorOptions.WHITE.value, 
+            button_color: ColorOptions = ColorOptions.LIGHT_BLUE.value,  
+            button_hover_color: ColorOptions = ColorOptions.MEDIUM_BLUE.value,
             filetype: List[FileType] = [FileType.ALL_FILES.value],
             file_input_type: FileInputType = FileInputType.FILEPATH.value,
             file_dialog_title: str = "Pilih File",
             default_path: str = "-",
+            filename: str = "",
+            layout_direction: LayoutDirection = LayoutDirection.VERTICAL.value,
             parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
@@ -28,6 +31,8 @@ class FileInputWidget(QWidget):
         self.button_width = button_width
         self.button_color = button_color
         self.button_font_color = button_font_color
+        self.button_hover_color = button_hover_color
+        self.layout_direction = layout_direction
 
         # input dialog
         self.file_input_type = file_input_type
@@ -35,16 +40,17 @@ class FileInputWidget(QWidget):
         self.file_dialog_title = file_dialog_title
 
         self.path = default_path
+        self.filename = filename
 
         self.init_ui()
 
     def init_ui(self) -> None:
         layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         if self.default_label:
-            self.label = QLabel(f"{self.default_label} : {self.path}")
-            self.label.setWordWrap(True)
+            self.label = QLabel(self.default_label)
             layout.addWidget(self.label)
 
         # Button to choose directory
@@ -52,10 +58,27 @@ class FileInputWidget(QWidget):
             name=self.button_name, 
             button_color=self.button_color, 
             button_font_color=self.button_font_color,
+            button_hover_color=self.button_hover_color,
             margin=0,
             fixed_width=self.button_width)
         self.button.clicked.connect(self.on_button_clicked)
-        layout.addWidget(self.button)
+
+        if self.layout_direction == LayoutDirection.VERTICAL.value:
+            layout.addWidget(self.button)
+            return
+        
+        field_layout = QHBoxLayout()
+        layout.addLayout(field_layout)
+
+        # Text field to display filename
+        self.filename_field = QLineEdit()
+        self.filename_field.setReadOnly(True)
+        self.filename_field.setStyleSheet("border: 0.5px solid gray; border-radius: 5px;")
+        if self.filename:
+            self.filename_field.setText(self.filename)
+
+        field_layout.addWidget(self.filename_field)
+        field_layout.addWidget(self.button)
 
     def on_button_clicked(self) -> None:
         """
@@ -77,6 +100,9 @@ class FileInputWidget(QWidget):
             # if self.default_label:
             #     self.label.setText(f"{self.default_label} : {path}")
 
+            # set the filename field
+            self.filename_field.setText(path)
+
             # emit the signal
             self.path = path
             self.path_selected.emit(path)
@@ -86,8 +112,12 @@ class FileInputWidget(QWidget):
 
     def set_path(self, path: str):
         self.path = path
-        label = self.label.text().split(":")
-        self.label.setText(f"{label[0]} : {path}")
+
+        if self.layout_direction == LayoutDirection.VERTICAL.value:
+            label = self.label.text().split(":")
+            self.label.setText(f"{label[0]} : {path}")
+        else:
+            self.filename_field.setText(path)
 
     @property
     def get_value(self) -> str:

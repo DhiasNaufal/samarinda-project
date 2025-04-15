@@ -1,6 +1,6 @@
 import os
 from PyQt6.QtWidgets import QWidget, QVBoxLayout
-from PyQt6.QtCore import QDate
+from PyQt6.QtCore import Qt
 from typing import Optional
 
 from .widgets.log_widget import LogWidget
@@ -8,6 +8,7 @@ from .widgets.button_widget import ButtonWidget
 from .widgets.web_viewer_widget import WebViewWidget
 from .widgets.message_box_widget import CustomMessageBox, QMessageBox
 from .widgets.date_widget import DateWidget
+from .widgets.frame_widget import FrameWidget
 
 from utils.common import resource_path
 from utils.logger import setup_logger
@@ -24,23 +25,27 @@ class SuperResolution(QWidget):
     def initUI(self) -> None:
         """Initialize the second tab (Placeholder for future functionality)."""
         layout = QVBoxLayout(self)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # Web Map View
         self.web_view = WebViewWidget(map_path=resource_path(os.path.join("assets", "super_resolution_map.html")))
         self.web_view.string_received.connect(self.on_coordinate_received)
         layout.addWidget(self.web_view)
 
+        frame = FrameWidget()
+        layout.addWidget(frame)
+
         # Date Widgets
         self.date = DateWidget(label="Pilih Tanggal")
-        layout.addWidget(self.date)
+        frame.add_widget(self.date)
 
         button = ButtonWidget("Mulai")
         button.clicked.connect(self.start_super_resolution)
-        layout.addWidget(button)
+        frame.add_widget(button)
         
         # Add Log and Watermark
         self.log_window = LogWidget()
-        self.log_window.setFixedHeight(200)
+        self.log_window.setMinimumHeight(100)
         layout.addWidget(self.log_window)
 
         pass

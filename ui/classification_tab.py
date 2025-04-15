@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QSizePolicy
 from PyQt6.QtCore import Qt
 from typing import Optional
 
@@ -13,7 +13,7 @@ from .widgets.frame_widget import FrameWidget
 from .widgets.message_box_widget import CustomMessageBox, QMessageBox
 from .widgets.dynamic_widget import DynamicWidget
 
-from utils.enum import LogLevel, FileType, FileInputType
+from utils.enum import LogLevel, FileType, FileInputType, LayoutDirection, ColorOptions
 from utils.common import get_filename, get_string_date, get_file_extension
 
 from logic.classification.classificationBg import ClassificationBgProcess
@@ -29,10 +29,11 @@ class Classification(QWidget):
     def __init__(self, parent : Optional[QWidget] = None) -> None:
         super().__init__(parent)
         os.environ["SM_FRAMEWORK"] = "tf.keras"
-        self.initUI()
+        
         self.calculate_temp = 0
         self.temp_output_path = None
 
+        self.initUI()
     def initUI(self):
         # set main layout
         main_layout = QVBoxLayout(self)
@@ -40,12 +41,14 @@ class Classification(QWidget):
 
         form_layout = DynamicWidget()
         form_layout.setFixedWidth(500)
+        form_layout.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
 
         self.imageInput = FileInputWidget(
             label="Dokumen Gambar",
             button_name="Muat Gambar",
             filetype=[FileType.TIFF.value],
-            file_dialog_title="Pilih Dokumen TIF"
+            file_dialog_title="Pilih Dokumen TIF",
+            layout_direction=LayoutDirection.HORIZONTAL.value,
         )
         self.imageInput.path_selected.connect(self.info)
         form_layout.add_widget(self.imageInput)
@@ -102,10 +105,13 @@ class Classification(QWidget):
             filetype=[FileType.SHP.value],
             file_input_type=FileInputType.FILENAME.value)
         download_shp.path_selected.connect(self.download_shp)
-        
         result_frame.add_widget(download_shp)
+        
         download_tif = FileInputWidget(
             button_name="Download TIFF", 
+            button_color=ColorOptions.LIGHT_GRAY.value,
+            button_hover_color=ColorOptions.MEDIUM_GRAY.value,
+            button_font_color=ColorOptions.MEDIUM_BLUE.value,
             filetype=[FileType.TIFF.value],
             file_input_type=FileInputType.FILENAME.value)
         download_tif.path_selected.connect(self.download_tif)
@@ -139,7 +145,8 @@ class Classification(QWidget):
         main_layout.addLayout(content_layout)
 
         self.log_window = LogWidget()
-        # self.log_window.setFixedHeight(200)
+        self.log_window.setMinimumHeight(100)
+        self.log_window.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         main_layout.addWidget(self.log_window)
 
     def disable_except(self, exceptions: list[QWidget] = []) -> None:
@@ -188,7 +195,6 @@ class Classification(QWidget):
         self.temp_output_path = None
 
         # Add new layer
-        self.imageInput.set_label(f"Dokumen Gambar : {filepath}")
         self.add_image_layer(filepath)
         self.log_window.log_message("TIF berhasil dimuat!")
 

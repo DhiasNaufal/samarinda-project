@@ -17,6 +17,7 @@ class DropdownWidget(QWidget):
   def init_ui(self, label_name: str, options: List):
     layout = QVBoxLayout(self)
     layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+    layout.setContentsMargins(0, 0, 0, 0)
 
     label = QLabel(label_name)
     layout.addWidget(label)
