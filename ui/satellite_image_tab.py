@@ -66,7 +66,7 @@ class SatelliteImage(QWidget):
       layout_direction=LayoutDirection.HORIZONTAL.value,
       filetype=[FileType.TIFF.value, FileType.PNG.value, FileType.JPG.value],
       file_input_type=FileInputType.FILENAME.value,
-      default_path="(dibuat otomatis oleh sistem)"
+      placeholder="(dibuat otomatis oleh sistem)"
     )
     frame.add_widget(self.output_path)
 

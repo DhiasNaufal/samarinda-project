@@ -20,8 +20,8 @@ class FileInputWidget(QWidget):
             filetype: List[FileType] = [FileType.ALL_FILES.value],
             file_input_type: FileInputType = FileInputType.FILEPATH.value,
             file_dialog_title: str = "Pilih File",
-            default_path: str = "-",
-            filename: str = "",
+            default_path: str = "",
+            placeholder: str = "",
             layout_direction: LayoutDirection = LayoutDirection.VERTICAL.value,
             parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
@@ -33,6 +33,7 @@ class FileInputWidget(QWidget):
         self.button_font_color = button_font_color
         self.button_hover_color = button_hover_color
         self.layout_direction = layout_direction
+        self.placeholder = placeholder
 
         # input dialog
         self.file_input_type = file_input_type
@@ -40,7 +41,6 @@ class FileInputWidget(QWidget):
         self.file_dialog_title = file_dialog_title
 
         self.path = default_path
-        self.filename = filename
 
         self.init_ui()
 
@@ -73,9 +73,10 @@ class FileInputWidget(QWidget):
         # Text field to display filename
         self.filename_field = QLineEdit()
         self.filename_field.setReadOnly(True)
-        self.filename_field.setStyleSheet("border: 0.5px solid gray; border-radius: 5px;")
-        if self.filename:
-            self.filename_field.setText(self.filename)
+        if self.placeholder:
+            self.filename_field.setPlaceholderText(self.placeholder)
+        if self.path:
+            self.filename_field.setText(self.path)
 
         field_layout.addWidget(self.filename_field)
         field_layout.addWidget(self.button)
