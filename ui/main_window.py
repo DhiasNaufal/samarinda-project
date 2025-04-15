@@ -17,7 +17,7 @@ class MainWindow(QWidget):
         super().__init__()
         self.setWindowTitle("Palm Tree Classification")
         self.setWindowIcon(QIcon(resource_path(os.path.join("assets", "img", "ugm.png"))))
-        self.setGeometry(200, 100, 1000, 700)
+        self.setGeometry(200, 30, 1000, 400)
         self.load_stylesheet(resource_path(os.path.join("assets", "css", "main.qss")))
         
         # Layout
@@ -30,6 +30,7 @@ class MainWindow(QWidget):
         self.tabs.addTab(SuperResolution(self), "Super Resolution")
         self.tabs.addTab(Classification(self), "Klasifikasi Kelapa Sawit")
         layout.addWidget(self.tabs)
+        # self.tabs.setCurrentIndex(3)
 
         # add tabs event handler
         self.tabs.tabBarClicked.connect(self.handle_clicked_tab)

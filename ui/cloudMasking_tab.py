@@ -115,7 +115,7 @@ class CloudMasking(QWidget):
         main_layout.addLayout(content_layout)
 
         self.log_window = LogWidget()
-        self.log_window.setFixedHeight(200)
+        self.log_window.setMinimumHeight(100)
         self.log_window.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         main_layout.addWidget(self.log_window)
         
