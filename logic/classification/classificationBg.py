@@ -20,11 +20,9 @@ class ClassificationBgProcess(QThread):
     result = pyqtSignal(dict)
     error = pyqtSignal(str)
 
-    def __init__(self,image_path: str, output_path: str, result_name: str, parent : Optional[QObject] = None) -> None:
+    def __init__(self,image_path: str, parent : Optional[QObject] = None) -> None:
         super().__init__(parent)
         self.image_path = image_path
-        self.result_name = result_name
-        self.output_path = output_path
 
     def normalize_image(self, image):
         return image.astype(np.float32) / 255.0
@@ -73,7 +71,7 @@ class ClassificationBgProcess(QThread):
         for patch in patches:
             patch_input = self.normalize_image(patch)
             patch_input = np.expand_dims(patch_input, axis=0)
-            prediction = model.predict(patch_input)
+            prediction = model.predict(patch_input, verbose=0)
             predicted_mask = np.argmax(prediction, axis=-1)[0]
             predictions.append(predicted_mask)
 
@@ -162,7 +160,7 @@ class ClassificationBgProcess(QThread):
             self.progress.emit("Melakukan prediksi...")
             mask = self.predict_patched_image(model, self.image_path)
             
-            self.progress.emit("Menyimpan hasil segmentasi...")
+            # self.progress.emit("Menyimpan hasil segmentasi...")
             image = self.decode_segmentation_mask(mask)
             self.progress.emit("Berhasil menyelesaikan proses prediksi...")
 

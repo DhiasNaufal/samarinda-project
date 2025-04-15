@@ -61,7 +61,6 @@ class Classification(QWidget):
         form_layout.add_widget(self.start_process)
 
         self.progress_bar = ProgressBarWidget()
-        self.progress_bar.setVisible(False)
         form_layout.add_widget(self.progress_bar)
 
         # classification result frame
@@ -123,7 +122,7 @@ class Classification(QWidget):
         label = QLabel("Layers")
         form_layout.add_widget(label)
         self.layer = ListWidget()
-        # self.layer.setFixedHeight(100)
+        self.layer.setFixedHeight(50)
         self.layer.item_changed.connect(lambda name: self.graphics_view.toggle_layer(name))
         form_layout.add_widget(self.layer)
 
@@ -282,8 +281,6 @@ class Classification(QWidget):
 
         # set output path
         output_path = os.path.join(os.getcwd(), "data")
-        if not os.path.exists(output_path):
-            os.makedirs(output_path)
 
         result_name = f"Hasil - {get_filename(self.imageInput.get_value, ext=False)}-{get_string_date()}.png"
         self.temp_output_path = os.path.join(output_path, result_name)
@@ -291,10 +288,7 @@ class Classification(QWidget):
         self.log_window.log_message('Memulai Klasifikasi')
 
         # start classification process
-        if self.model_dropdown.get_value == "Citra Satelit":
-            self._start_worker(worker_type="classification", image_path = self.imageInput.get_value, output_path = self.temp_output_path, result_name = result_name)
-        elif self.model_dropdown.get_value == "Sentinel 2":
-            self._start_worker(worker_type="classification", image_path = self.imageInput.get_value)   
+        self._start_worker(worker_type="classification", image_path = self.imageInput.get_value)   
  
     def _start_worker(self, worker_type="", **kwargs):
         if worker_type == "classification":
@@ -311,7 +305,6 @@ class Classification(QWidget):
             self.log_window.log_message("Invalid worker type")
             return
         
-        self.qthread.started.connect(lambda: self.progress_bar.setVisible(True))
         self.qthread.started.connect(lambda: self.progress_bar.set_progress_range())
         self.qthread.started.connect(lambda: self.disable_except([self.log_window]))
 
@@ -322,6 +315,6 @@ class Classification(QWidget):
         self.qthread.error.connect(lambda error_msg: self.log_window.log_message(error_msg, level=LogLevel.ERROR.value))
         
         self.qthread.finished.connect(self.qthread.deleteLater)
-        self.qthread.finished.connect(lambda: self.progress_bar.setVisible(False))
+        self.qthread.finished.connect(lambda: self.progress_bar.set_progress_range(max=100))
         self.qthread.finished.connect(lambda: self.enable_all())
         self.qthread.start()

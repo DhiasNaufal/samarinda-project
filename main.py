@@ -5,6 +5,12 @@ from PyQt6.QtCore import Qt, QTimer
 from ui.main_window import MainWindow
 from utils.common import resource_path
 import os
+import sys
+
+if not sys.stdout:
+    sys.stdout = open(os.devnull, 'w')
+if not sys.stderr:
+    sys.stderr = open(os.devnull, 'w')
 
 def show_main_window():
     window.show()
