@@ -32,8 +32,8 @@ class ClassificationBgProcess(QThread):
     def load_image(self, image_path):
         if self.image_source == ImageSource.UAV.value:
             with rasterio.open(image_path) as src:
-                print(f"📷 Membaca TIFF: {image_path}")
-                print(f"🛰 Jumlah band tersedia: {src.count}")
+                logger.info(f"📷 Membaca TIFF: {image_path}")
+                logger.info(f"🛰 Jumlah band tersedia: {src.count}")
 
                 if src.count < 3:
                     raise ValueError("Gambar memiliki kurang dari 3 band, tidak bisa diolah sebagai RGB.")
