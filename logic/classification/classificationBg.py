@@ -12,6 +12,7 @@ import os
 from .process_result import ProcessResult
 from utils.common import resource_path
 from utils.logger import setup_logger
+from utils.enum import ImageSource
 
 logger = setup_logger()
 
@@ -20,17 +21,32 @@ class ClassificationBgProcess(QThread):
     result = pyqtSignal(dict)
     error = pyqtSignal(str)
 
-    def __init__(self,image_path: str, parent : Optional[QObject] = None) -> None:
+    def __init__(self,image_path: str, image_source: ImageSource, parent : Optional[QObject] = None) -> None:
         super().__init__(parent)
         self.image_path = image_path
+        self.image_source = image_source
 
     def normalize_image(self, image):
         return image.astype(np.float32) / 255.0
 
     def load_image(self, image_path):
-        image = cv2.imread(image_path)
-        if image is None:
-            raise ValueError(f"Gagal memuat gambar")
+        if self.image_source == ImageSource.UAV.value:
+            with rasterio.open(image_path) as src:
+                print(f"📷 Membaca TIFF: {image_path}")
+                print(f"🛰 Jumlah band tersedia: {src.count}")
+
+                if src.count < 3:
+                    raise ValueError("Gambar memiliki kurang dari 3 band, tidak bisa diolah sebagai RGB.")
+
+                image = np.stack([src.read(b) for b in [1, 2, 3]], axis=-1)
+
+                if image.dtype != np.uint8:
+                    image = np.clip(image / image.max() * 255, 0, 255).astype(np.uint8)
+        else:
+                image = cv2.imread(image_path)
+                if image is None:
+                    raise ValueError(f"Gagal memuat gambar")
+
         return image, image.shape[:2]  # (H, W)
 
     # ================================
@@ -63,6 +79,7 @@ class ClassificationBgProcess(QThread):
     # ================================
 
     def predict_patched_image(self, model, image_path, patch_size=256, overlap=128):
+        num_classes = 5 if self.image_source == ImageSource.SATELLITE.value else 4
         image, original_size = self.load_image(image_path)
         patches, positions, padded_size = self.extract_patches(image, patch_size, overlap)
         
@@ -76,7 +93,7 @@ class ClassificationBgProcess(QThread):
             predictions.append(predicted_mask)
 
         predictions = np.array(predictions)
-        reconstructed_mask = self.reconstruct_from_patches(predictions, positions, padded_size, patch_size, overlap)
+        reconstructed_mask = self.reconstruct_from_patches(predictions, positions, padded_size, num_classes, patch_size, overlap)
 
         return reconstructed_mask[:original_size[0], :original_size[1]]
 
@@ -84,7 +101,7 @@ class ClassificationBgProcess(QThread):
     # 4️⃣ Rekonstruksi Blending
     # ================================
 
-    def reconstruct_from_patches(self, patches, positions, padded_size, patch_size=256, overlap=128, num_classes=5):
+    def reconstruct_from_patches(self, patches, positions, padded_size, num_classes, patch_size=256, overlap=128):
         h, w = padded_size
         step = patch_size - overlap
 
@@ -125,6 +142,8 @@ class ClassificationBgProcess(QThread):
             'urban': [237, 92, 14],     # Orange
             'vegetation': [102, 237, 69]  # Hijau terang
         }
+        if self.image_source == ImageSource.UAV.value:
+            colors.pop("urban", None)
 
         class_colors = list(colors.values())
 
@@ -155,7 +174,11 @@ class ClassificationBgProcess(QThread):
     def run(self):
         try:
             self.progress.emit("Memuat model...")
-            model = load_model(resource_path(os.path.join("logic", "classification", "model", "best_model_fix.h5")), compile=False)
+            if self.image_source == ImageSource.SATELLITE.value:
+                model_path = os.path.join("logic", "classification", "model", "best_model_fix.h5")
+            else:
+                model_path = os.path.join("logic", "classification", "model", "best_model_100e.h5")
+            model = load_model(resource_path(model_path), compile=False)
 
             self.progress.emit("Melakukan prediksi...")
             mask = self.predict_patched_image(model, self.image_path)

@@ -41,3 +41,7 @@ class ColorOptions(Enum):
   MEDIUM_GRAY = "#E0E0E0"
   LIGHT_BLUE = "#0096C3"
   MEDIUM_BLUE = "#017FA7"
+
+class ImageSource(Enum):
+  UAV = "uav"
+  SATELLITE = "satellite"

@@ -100,6 +100,8 @@ class SentinelImageClassification(QThread):
 
         # self.result.emit(prediction_mask)
         # image: np.ndarray 
+        
+        # colorize image for display
         image = self.colored_prediction(prediction_mask)
         self.progress.emit("Berhasil menyelesaikan proses prediksi...")
 

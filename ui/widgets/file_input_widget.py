@@ -102,7 +102,8 @@ class FileInputWidget(QWidget):
             #     self.label.setText(f"{self.default_label} : {path}")
 
             # set the filename field
-            self.filename_field.setText(path)
+            if self.layout_direction == LayoutDirection.HORIZONTAL.value:
+                self.filename_field.setText(path)
 
             # emit the signal
             self.path = path

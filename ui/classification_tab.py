@@ -13,7 +13,7 @@ from .widgets.frame_widget import FrameWidget
 from .widgets.message_box_widget import CustomMessageBox, QMessageBox
 from .widgets.dynamic_widget import DynamicWidget
 
-from utils.enum import LogLevel, FileType, FileInputType, LayoutDirection, ColorOptions
+from utils.enum import LogLevel, FileType, FileInputType, LayoutDirection, ColorOptions, ImageSource
 from utils.common import get_filename, get_string_date, get_file_extension
 
 from logic.classification.classificationBg import ClassificationBgProcess
@@ -202,7 +202,7 @@ class Classification(QWidget):
         self.default_area()
 
     def download_shp(self, path):
-        if self.model_dropdown.get_value == "Citra Satelit":
+        if self.model_dropdown.get_value == "Citra Satelit" or self.model_dropdown.get_value == "UAV":
             self._start_worker(
                 worker_type="download", 
                 mode="vector", 
@@ -217,7 +217,7 @@ class Classification(QWidget):
                 class_array=self.result["class_array"])
     
     def download_tif(self, path):
-        if self.model_dropdown.get_value == "Citra Satelit":
+        if self.model_dropdown.get_value == "Citra Satelit" or self.model_dropdown.get_value == "UAV":
             self._start_worker(
                 worker_type="download", 
                 mode="raster", 
@@ -266,16 +266,6 @@ class Classification(QWidget):
             )
             message.show()
             return
-
-        if self.model_dropdown.get_value == "UAV":
-            message = CustomMessageBox(
-                parent=self,
-                title="Warning",
-                message=f"Model untuk sumber gambar {self.model_dropdown.get_value} saat ini belum tersedia",
-                icon=QMessageBox.Icon.Warning
-            )
-            message.show()
-            return
         
         # Remove current result if exists
         if self.temp_output_path is not None:
@@ -294,16 +284,17 @@ class Classification(QWidget):
         self.log_window.log_message('Memulai Klasifikasi')
 
         # start classification process
-        self._start_worker(worker_type="classification", image_path = self.imageInput.get_value)   
+        image_source = ImageSource.SATELLITE.value if self.model_dropdown.get_value == "Citra Satelit" else ImageSource.UAV.value
+        self._start_worker(worker_type="classification", image_path = self.imageInput.get_value, image_source=image_source)   
  
     def _start_worker(self, worker_type="", **kwargs):
         if worker_type == "classification":
-            if self.model_dropdown.get_value == "Citra Satelit":
+            if self.model_dropdown.get_value == "Citra Satelit" or self.model_dropdown.get_value == "UAV":
                 self.qthread = ClassificationBgProcess(**kwargs)
             elif self.model_dropdown.get_value == "Sentinel 2":
                 self.qthread = SentinelImageClassification(**kwargs)
         elif worker_type == "download":
-            if self.model_dropdown.get_value == "Citra Satelit":
+            if self.model_dropdown.get_value == "Citra Satelit" or self.model_dropdown.get_value == "UAV":
                 self.qthread = SaveWorker(**kwargs)
             elif self.model_dropdown.get_value == "Sentinel 2":
                 self.qthread = SentinelImageSaveWorker(**kwargs)
@@ -312,7 +303,7 @@ class Classification(QWidget):
             return
         
         self.qthread.started.connect(lambda: self.progress_bar.set_progress_range())
-        self.qthread.started.connect(lambda: self.disable_except([self.log_window]))
+        self.qthread.started.connect(lambda: self.disable_except([self.log_window, self.graphics_view]))
 
         if worker_type == "classification":
             self.qthread.progress.connect(lambda message : self.log_window.log_message(message))
