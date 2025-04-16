@@ -28,25 +28,31 @@ class SuperResolution(QWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # Web Map View
-        self.web_view = WebViewWidget(map_path=resource_path(os.path.join("assets", "super_resolution_map.html")))
-        self.web_view.string_received.connect(self.on_coordinate_received)
-        layout.addWidget(self.web_view)
+        # self.web_view = WebViewWidget(map_path=resource_path(os.path.join("assets", "super_resolution_map.html")))
+        # self.web_view.string_received.connect(self.on_coordinate_received)
+        # layout.addWidget(self.web_view)
 
-        frame = FrameWidget()
-        layout.addWidget(frame)
+        # frame = FrameWidget()
+        # layout.addWidget(frame)
 
-        # Date Widgets
-        self.date = DateWidget(label="Pilih Tanggal")
-        frame.add_widget(self.date)
+        # # Date Widgets
+        # self.date = DateWidget(label="Pilih Tanggal")
+        # frame.add_widget(self.date)
 
-        button = ButtonWidget("Mulai")
-        button.clicked.connect(self.start_super_resolution)
-        frame.add_widget(button)
+        # button = ButtonWidget("Mulai")
+        # button.clicked.connect(self.start_super_resolution)
+        # frame.add_widget(button)
+
+        # Google colab
+        self.colab = WebViewWidget(map_url="https://colab.research.google.com/drive/1IGGJBYXJ6bFMExjhgvhudoFPMfRhsKCC#scrollTo=RSU1mQ4gU6XQ")
+        # self.colab = WebViewWidget(map_url="https://colab.research.google.com/drive/1IGGJBYXJ6bFMExjhgvhudoFPMfRhsKCC?usp=sharing")
+        # self.colab.string_received.connect(self.on_coordinate_received)
+        layout.addWidget(self.colab)
         
-        # Add Log and Watermark
-        self.log_window = LogWidget()
-        self.log_window.setMinimumHeight(100)
-        layout.addWidget(self.log_window)
+        # # Add Log and Watermark
+        # self.log_window = LogWidget()
+        # self.log_window.setMinimumHeight(100)
+        # layout.addWidget(self.log_window)
 
         pass
 
