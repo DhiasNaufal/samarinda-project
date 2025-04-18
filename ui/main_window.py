@@ -38,10 +38,13 @@ class MainWindow(QWidget):
         self.tabs.tabBar().setStyleSheet("""
             QTabBar::tab {
                 background-color: #B6B6B6;
-                color: white;
+                color: black
+                border: none;
             }
             QTabBar::tab:selected {
                 background-color: #017FA7;
+                color: white;
+                border: none;
             }
         """)
 

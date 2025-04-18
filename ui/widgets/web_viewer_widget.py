@@ -1,19 +1,22 @@
-from PyQt6.QtWidgets import QWidget, QSizePolicy, QVBoxLayout
+from PyQt6.QtWidgets import QWidget, QSizePolicy, QVBoxLayout, QFileDialog
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebChannel import QWebChannel
-from PyQt6.QtCore import Qt, pyqtSlot, pyqtSignal, QUrl
+from PyQt6.QtWebEngineCore import QWebEngineProfile, QWebEngineDownloadRequest
+from PyQt6.QtCore import Qt, pyqtSlot, pyqtSignal, QUrl, QMutex
 
 import json
 from typing import Optional
+import os
 class WebViewWidget(QWidget):
   geojson_generated = pyqtSignal(dict)
   string_received = pyqtSignal(str)
 
-  def __init__(self, map_url: str = "", map_path: str = "", parent: Optional[QWidget] = None) -> None:
+  def __init__(self, map_url: str = "", map_path: str = "", min_height: int = 400, parent: Optional[QWidget] = None) -> None:
     super().__init__(parent)
 
     self.map_path = map_path
     self.map_url = map_url
+    self.min_height = min_height
     self.init_ui()
 
   def init_ui(self) -> None:
@@ -29,12 +32,29 @@ class WebViewWidget(QWidget):
 
     self.web_view.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
     self.web_view.setStyleSheet("QWebEngineView { height: 100%; }")
-    self.web_view.setMinimumHeight(400)
+    self.web_view.setMinimumHeight(self.min_height)
     layout.addWidget(self.web_view)
 
     self.channel = QWebChannel()
     self.channel.registerObject("pyqtChannel", self)
     self.web_view.page().setWebChannel(self.channel)
+
+    # Track handled downloads to avoid duplicate issues
+    profile = QWebEngineProfile.defaultProfile()
+    profile.downloadRequested.connect(self.handle_download_requested)
+  
+  def handle_download_requested(self, download: QWebEngineDownloadRequest):
+    """Handle download requests from the web view."""
+    download.accept()
+
+    # Connect to stateChanged instead of finished
+    def on_state_changed(state):
+        if state == QWebEngineDownloadRequest.DownloadState.DownloadCompleted:
+            print("✅ Download finished.")
+        elif state == QWebEngineDownloadRequest.DownloadState.DownloadInterrupted:
+            print("❌ Download interrupted.")
+
+    download.stateChanged.connect(on_state_changed)
 
   def load_map(self, map_path: str) -> None:
     """Load map.html content from file."""

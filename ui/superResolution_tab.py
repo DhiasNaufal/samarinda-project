@@ -45,7 +45,7 @@ class SuperResolution(QWidget):
 
         # Google colab
         self.colab = WebViewWidget(map_url="https://colab.research.google.com/drive/1IGGJBYXJ6bFMExjhgvhudoFPMfRhsKCC#scrollTo=RSU1mQ4gU6XQ")
-        # self.colab = WebViewWidget(map_url="https://colab.research.google.com/drive/1IGGJBYXJ6bFMExjhgvhudoFPMfRhsKCC?usp=sharing")
+        # self.colab = WebViewWidget(map_url="https://colab.research.google.com/drive/1E0rwuIl8Wt1blwU0Jeu0w2MhsnOOEA8E?usp=sharing")
         # self.colab.string_received.connect(self.on_coordinate_received)
         layout.addWidget(self.colab)
         
